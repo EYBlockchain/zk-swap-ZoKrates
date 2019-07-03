@@ -1,0 +1,12 @@
+[submodule "deps/sapling-crypto"]
+	path = deps/sapling-crypto
+	url = ssh://git@git.lab-apps.fr/zkp/sapling-crypto
+[submodule "deps/ff"]
+	path = deps/ff
+	url = ssh://git@git.lab-apps.fr/zkp/ff
+[submodule "deps/bellman"]
+	path = deps/bellman
+	url = ssh://git@git.lab-apps.fr/zkp/bellman
+[submodule "deps/pairing"]
+	path = deps/pairing
+	url = ssh://git@git.lab-apps.fr/zkp/pairing
