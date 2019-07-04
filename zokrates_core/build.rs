@@ -16,7 +16,7 @@ fn main() {
         // fetch libsnark source
 
         const LIBSNARK_URL: &'static str = "https://github.com/scipr-lab/libsnark.git";
-        const LIBSNARK_COMMIT: &'static str = "f7c87b88744ecfd008126d415494d9b34c4c1b20";
+        const LIBSNARK_COMMIT: &'static str = "477c9dfd07b280e42369f82f89c08416319e24ae";
 
         let libsnark_source_path = &PathBuf::from(env::var("OUT_DIR").unwrap()).join("LIBSNARK");
 
@@ -55,7 +55,6 @@ fn main() {
             .include(libsnark_source_path.join("depends/libff"))
             .include(libsnark_source_path.join("depends/libfqfft"))
             .define("CURVE_ALT_BN128", None)
-            .file("lib/util.cpp")
             .file("lib/gm17.cpp")
             .file("lib/pghr13.cpp")
             .compile("libwraplibsnark.a");
@@ -80,3 +79,4 @@ fn main() {
         }
     }
 }
+
