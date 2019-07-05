@@ -42,7 +42,7 @@ r1cs_ppzksnark_constraint_system<ppT> createConstraintSystem(const uint8_t* A, c
   struct VariableValueMapping {
     int constraint_id;
     int variable_id;
-    uint8_t variable_value[32];
+    uint8_t variable_value[n*mp_limb_t_size];
   };
   const VariableValueMapping* A_vvmap = (VariableValueMapping*) A;
   const VariableValueMapping* B_vvmap = (VariableValueMapping*) B;
@@ -144,7 +144,7 @@ void exportProof(r1cs_ppzksnark_proof<ppT> proof, const char* proof_path, const 
                     if(i!=1){
                       ss << ",";
                     }
-                    ss << outputInputAsHex<n>(libsnarkBigintFromBytes<n>(public_inputs + i*32));
+                    ss << outputInputAsHex<n>(libsnarkBigintFromBytes<n>(public_inputs + i*n*mp_limb_t_size));
                   }
                   ss << "]" << "\n";
                 ss << "}" << "\n";
@@ -173,10 +173,10 @@ bool generate_proof(const char* pk_path, const char* proof_path, const uint8_t* 
   auto pk = deserializeProvingKeyFromFile<ppT>(pk_path);
   r1cs_variable_assignment<libff::Fr<ppT> > full_variable_assignment;
   for (int i = 1; i < public_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<n>(public_inputs + i*32)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<n>(public_inputs + i*n*mp_limb_t_size)));
   }
   for (int i = 0; i < private_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<n>(private_inputs + i*32)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<n>(private_inputs + i*n*mp_limb_t_size)));
   }
   r1cs_primary_input<libff::Fr<ppT>> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + public_inputs_length-1);
   r1cs_primary_input<libff::Fr<ppT>> auxiliary_input(full_variable_assignment.begin() + public_inputs_length-1, full_variable_assignment.end());

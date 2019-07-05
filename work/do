@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+
+clean() {
+    rm -rf out* *.json *.key witness
+}
+
+build() {
+    (cd .. && ./build.sh)
+}
+
+compile() {
+    ../target/debug/zokrates compile -i root.code
+}
+
+setup() {
+    ../target/debug/zokrates setup
+}
+
+witness() {
+    ../target/debug/zokrates compute-witness -a "$@"
+}
+
+generate() {
+    ../target/debug/zokrates generate-proof
+}
+
+err() {
+    echo "Possible commands: clean, build, compile, setup, witness, generate"
+}
+
+main() {
+    local cmd; cmd=$1; shift
+    [ -z "$cmd" ] && err && return 1
+    $cmd "$@"
+}
+
+main "$@"

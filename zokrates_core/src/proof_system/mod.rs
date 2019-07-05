@@ -1,4 +1,5 @@
 mod bn128;
+mod mnt;
 
 use std::fs::File;
 use zokrates_field::field::FieldPrime;
@@ -8,6 +9,10 @@ pub use self::bn128::G16;
 pub use self::bn128::GM17;
 #[cfg(feature = "libsnark")]
 pub use self::bn128::PGHR13;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::PGHR13_MNT4;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::PGHR13_MNT6;
 
 use crate::ir;
 use std::io::BufReader;

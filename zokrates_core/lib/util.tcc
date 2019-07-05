@@ -16,7 +16,7 @@
 using namespace std;
 
 // TODO check it (should crash when not verified)
-static const mp_size_t mp_limb_t_size = 8;
+const mp_size_t mp_limb_t_size = 8;
 
 template<mp_size_t n>
 libff::bigint<n> libsnarkBigintFromBytes(const uint8_t* _x)
@@ -25,7 +25,7 @@ libff::bigint<n> libsnarkBigintFromBytes(const uint8_t* _x)
 
   for (unsigned i = 0; i < n; i++) {
     for (unsigned j = 0; j < 8; j++) {
-      x.data[3 - i] |= uint64_t(_x[i * 8 + j]) << (8 * (7-j));
+      x.data[n - 1 - i] |= uint64_t(_x[i * 8 + j]) << (8 * (7-j));
     }
   }
 
@@ -37,7 +37,7 @@ std::string HexStringFromLibsnarkBigint(libff::bigint<n> _x){
   uint8_t x[mp_limb_t_size * n];
   for (unsigned i = 0; i < n; i++)
     for (unsigned j = 0; j < 8; j++)
-      x[i * 8 + j] = uint8_t(uint64_t(_x.data[3 - i]) >> (8 * (7 - j)));
+      x[i * 8 + j] = uint8_t(uint64_t(_x.data[n - 1 - i]) >> (8 * (7 - j)));
 
   std::stringstream ss;
   ss << std::setfill('0');
