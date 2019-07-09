@@ -7,7 +7,7 @@
 use crate::typed_absy::folder::*;
 use crate::typed_absy::*;
 use std::collections::HashMap;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 pub struct Propagator<'ast, T: Field> {
     constants: HashMap<TypedAssignee<'ast, T>, TypedExpression<'ast, T>>,
@@ -343,7 +343,7 @@ impl<'ast, T: Field> Folder<'ast, T> for Propagator<'ast, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[cfg(test)]
     mod expression {
@@ -356,65 +356,65 @@ mod tests {
             #[test]
             fn add() {
                 let e = FieldElementExpression::Add(
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(5))
+                    FieldElementExpression::Number(BN128::from(5))
                 );
             }
 
             #[test]
             fn sub() {
                 let e = FieldElementExpression::Sub(
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(1))
+                    FieldElementExpression::Number(BN128::from(1))
                 );
             }
 
             #[test]
             fn mult() {
                 let e = FieldElementExpression::Mult(
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(6))
+                    FieldElementExpression::Number(BN128::from(6))
                 );
             }
 
             #[test]
             fn div() {
                 let e = FieldElementExpression::Div(
-                    box FieldElementExpression::Number(FieldPrime::from(6)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(6)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(3))
+                    FieldElementExpression::Number(BN128::from(3))
                 );
             }
 
             #[test]
             fn pow() {
                 let e = FieldElementExpression::Pow(
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(8))
+                    FieldElementExpression::Number(BN128::from(8))
                 );
             }
 
@@ -422,13 +422,13 @@ mod tests {
             fn if_else_true() {
                 let e = FieldElementExpression::IfElse(
                     box BooleanExpression::Value(true),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(2))
+                    FieldElementExpression::Number(BN128::from(2))
                 );
             }
 
@@ -436,13 +436,13 @@ mod tests {
             fn if_else_false() {
                 let e = FieldElementExpression::IfElse(
                     box BooleanExpression::Value(false),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(3)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(3)),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(3))
+                    FieldElementExpression::Number(BN128::from(3))
                 );
             }
 
@@ -452,20 +452,20 @@ mod tests {
                     box FieldElementArrayExpression::Value(
                         3,
                         vec![
-                            FieldElementExpression::Number(FieldPrime::from(1)),
-                            FieldElementExpression::Number(FieldPrime::from(2)),
-                            FieldElementExpression::Number(FieldPrime::from(3)),
+                            FieldElementExpression::Number(BN128::from(1)),
+                            FieldElementExpression::Number(BN128::from(2)),
+                            FieldElementExpression::Number(BN128::from(3)),
                         ],
                     ),
                     box FieldElementExpression::Add(
-                        box FieldElementExpression::Number(FieldPrime::from(1)),
-                        box FieldElementExpression::Number(FieldPrime::from(1)),
+                        box FieldElementExpression::Number(BN128::from(1)),
+                        box FieldElementExpression::Number(BN128::from(1)),
                     ),
                 );
 
                 assert_eq!(
                     Propagator::new().fold_field_expression(e),
-                    FieldElementExpression::Number(FieldPrime::from(3))
+                    FieldElementExpression::Number(BN128::from(3))
                 );
             }
         }
@@ -477,13 +477,13 @@ mod tests {
             #[test]
             fn eq() {
                 let e_true = BooleanExpression::Eq(
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 let e_false = BooleanExpression::Eq(
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(4)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
@@ -499,13 +499,13 @@ mod tests {
             #[test]
             fn lt() {
                 let e_true = BooleanExpression::Lt(
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(4)),
                 );
 
                 let e_false = BooleanExpression::Lt(
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(4)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
@@ -521,13 +521,13 @@ mod tests {
             #[test]
             fn le() {
                 let e_true = BooleanExpression::Le(
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(2)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 let e_false = BooleanExpression::Le(
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
-                    box FieldElementExpression::Number(FieldPrime::from(2)),
+                    box FieldElementExpression::Number(BN128::from(4)),
+                    box FieldElementExpression::Number(BN128::from(2)),
                 );
 
                 assert_eq!(
@@ -543,13 +543,13 @@ mod tests {
             #[test]
             fn gt() {
                 let e_true = BooleanExpression::Gt(
-                    box FieldElementExpression::Number(FieldPrime::from(5)),
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
+                    box FieldElementExpression::Number(BN128::from(5)),
+                    box FieldElementExpression::Number(BN128::from(4)),
                 );
 
                 let e_false = BooleanExpression::Gt(
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
-                    box FieldElementExpression::Number(FieldPrime::from(5)),
+                    box FieldElementExpression::Number(BN128::from(4)),
+                    box FieldElementExpression::Number(BN128::from(5)),
                 );
 
                 assert_eq!(
@@ -565,13 +565,13 @@ mod tests {
             #[test]
             fn ge() {
                 let e_true = BooleanExpression::Ge(
-                    box FieldElementExpression::Number(FieldPrime::from(5)),
-                    box FieldElementExpression::Number(FieldPrime::from(5)),
+                    box FieldElementExpression::Number(BN128::from(5)),
+                    box FieldElementExpression::Number(BN128::from(5)),
                 );
 
                 let e_false = BooleanExpression::Ge(
-                    box FieldElementExpression::Number(FieldPrime::from(4)),
-                    box FieldElementExpression::Number(FieldPrime::from(5)),
+                    box FieldElementExpression::Number(BN128::from(4)),
+                    box FieldElementExpression::Number(BN128::from(5)),
                 );
 
                 assert_eq!(
@@ -607,8 +607,8 @@ mod tests {
                     FieldElementArrayExpression::Value(
                         2,
                         vec![
-                            FieldElementExpression::Number(FieldPrime::from(21)),
-                            FieldElementExpression::Number(FieldPrime::from(22)),
+                            FieldElementExpression::Number(BN128::from(21)),
+                            FieldElementExpression::Number(BN128::from(22)),
                         ],
                     )
                     .into(),
@@ -616,21 +616,21 @@ mod tests {
                 let overwrite = TypedStatement::Definition(
                     TypedAssignee::ArrayElement(
                         box TypedAssignee::Identifier(Variable::field_array("a".into(), 2)),
-                        box FieldElementExpression::Number(FieldPrime::from(1)),
+                        box FieldElementExpression::Number(BN128::from(1)),
                     ),
-                    FieldElementExpression::Number(FieldPrime::from(42)).into(),
+                    FieldElementExpression::Number(BN128::from(42)).into(),
                 );
 
                 let mut p = Propagator::new();
 
                 p.fold_statement(declaration);
                 p.fold_statement(definition);
-                let expected_value: TypedExpression<FieldPrime> =
+                let expected_value: TypedExpression<BN128> =
                     FieldElementArrayExpression::Value(
                         2,
                         vec![
-                            FieldElementExpression::Number(FieldPrime::from(21)),
-                            FieldElementExpression::Number(FieldPrime::from(22)),
+                            FieldElementExpression::Number(BN128::from(21)),
+                            FieldElementExpression::Number(BN128::from(22)),
                         ],
                     )
                     .into();
@@ -646,12 +646,12 @@ mod tests {
                 );
 
                 p.fold_statement(overwrite);
-                let expected_value: TypedExpression<FieldPrime> =
+                let expected_value: TypedExpression<BN128> =
                     FieldElementArrayExpression::Value(
                         2,
                         vec![
-                            FieldElementExpression::Number(FieldPrime::from(21)),
-                            FieldElementExpression::Number(FieldPrime::from(42)),
+                            FieldElementExpression::Number(BN128::from(21)),
+                            FieldElementExpression::Number(BN128::from(42)),
                         ],
                     )
                     .into();
@@ -682,9 +682,9 @@ mod tests {
                 let overwrite = TypedStatement::Definition(
                     TypedAssignee::ArrayElement(
                         box TypedAssignee::Identifier(Variable::field_array("a".into(), 2)),
-                        box FieldElementExpression::Number(FieldPrime::from(1)),
+                        box FieldElementExpression::Number(BN128::from(1)),
                     ),
-                    FieldElementExpression::Number(FieldPrime::from(42)).into(),
+                    FieldElementExpression::Number(BN128::from(42)).into(),
                 );
 
                 let mut p = Propagator::new();

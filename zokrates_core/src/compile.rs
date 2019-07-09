@@ -14,7 +14,7 @@ use static_analysis::Analyse;
 use std::fmt;
 use std::io;
 use std::io::BufRead;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 use zokrates_pest_ast as pest;
 
 #[derive(Debug)]
@@ -175,7 +175,7 @@ pub fn compile_aux<T: Field, R: BufRead, S: BufRead, E: Into<imports::Error>>(
 mod test {
     use super::*;
     use std::io::{BufReader, Empty};
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[test]
     fn no_resolver_with_imports() {
@@ -187,7 +187,7 @@ mod test {
 		"#
             .as_bytes(),
         );
-        let res: Result<ir::Prog<FieldPrime>, CompileErrors> = compile(
+        let res: Result<ir::Prog<BN128>, CompileErrors> = compile(
             &mut r,
             Some(String::from("./path/to/file")),
             None::<
@@ -213,7 +213,7 @@ mod test {
 		"#
             .as_bytes(),
         );
-        let res: Result<ir::Prog<FieldPrime>, CompileErrors> = compile(
+        let res: Result<ir::Prog<BN128>, CompileErrors> = compile(
             &mut r,
             Some(String::from("./path/to/file")),
             None::<

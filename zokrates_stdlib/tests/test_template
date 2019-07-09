@@ -2,7 +2,7 @@
 #[ignore]
 #[allow(non_snake_case)]
 fn {test_name}() {{
-    use zokrates_field::field::{{Field, FieldPrime}};
+    use zokrates_field::{{Field, BN128}};
     use std::path::PathBuf;
     use zokrates_fs_resolver::resolve;
     use zokrates_core::compile::compile;
@@ -27,7 +27,7 @@ fn {test_name}() {{
 
     for test in t.tests.into_iter() {{
         let input = &test.input.values;
-        let output = bin.execute(&input.iter().map(|v| FieldPrime::try_from_dec_str(&v.clone()).unwrap()).collect());
+        let output = bin.execute(&input.iter().map(|v| BN128::try_from_dec_str(&v.clone()).unwrap()).collect());
 
         match utils::compare(output, test.output) {{
             Err(e) => {{

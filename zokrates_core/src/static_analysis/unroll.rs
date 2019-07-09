@@ -8,7 +8,7 @@ use crate::typed_absy::folder::*;
 use crate::typed_absy::*;
 use crate::types::Type;
 use std::collections::HashMap;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 pub struct Unroller<'ast> {
     substitution: HashMap<Identifier<'ast>, usize>,
@@ -177,7 +177,7 @@ impl<'ast, T: Field> Folder<'ast, T> for Unroller<'ast> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[cfg(test)]
     mod statement {
@@ -198,8 +198,8 @@ mod tests {
 
             let s = TypedStatement::For(
                 Variable::field_element("i".into()),
-                FieldPrime::from(2),
-                FieldPrime::from(5),
+                BN128::from(2),
+                BN128::from(5),
                 vec![
                     TypedStatement::Declaration(Variable::field_element("foo".into())),
                     TypedStatement::Definition(
@@ -214,7 +214,7 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("i").version(0),
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(2)).into(),
+                    FieldElementExpression::Number(BN128::from(2)).into(),
                 ),
                 TypedStatement::Definition(
                     TypedAssignee::Identifier(Variable::field_element(
@@ -226,7 +226,7 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("i").version(1),
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(3)).into(),
+                    FieldElementExpression::Number(BN128::from(3)).into(),
                 ),
                 TypedStatement::Definition(
                     TypedAssignee::Identifier(Variable::field_element(
@@ -238,7 +238,7 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("i").version(2),
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(4)).into(),
+                    FieldElementExpression::Number(BN128::from(4)).into(),
                 ),
                 TypedStatement::Definition(
                     TypedAssignee::Identifier(Variable::field_element(
@@ -267,13 +267,13 @@ mod tests {
 
             let mut u = Unroller::new();
 
-            let s: TypedStatement<FieldPrime> =
+            let s: TypedStatement<BN128> =
                 TypedStatement::Declaration(Variable::field_element("a".into()));
             assert_eq!(u.fold_statement(s), vec![]);
 
             let s = TypedStatement::Definition(
                 TypedAssignee::Identifier(Variable::field_element("a".into())),
-                FieldElementExpression::Number(FieldPrime::from(5)).into(),
+                FieldElementExpression::Number(BN128::from(5)).into(),
             );
             assert_eq!(
                 u.fold_statement(s),
@@ -281,13 +281,13 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("a").version(0)
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(5)).into()
+                    FieldElementExpression::Number(BN128::from(5)).into()
                 )]
             );
 
             let s = TypedStatement::Definition(
                 TypedAssignee::Identifier(Variable::field_element("a".into())),
-                FieldElementExpression::Number(FieldPrime::from(6)).into(),
+                FieldElementExpression::Number(BN128::from(6)).into(),
             );
             assert_eq!(
                 u.fold_statement(s),
@@ -295,11 +295,11 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("a").version(1)
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(6)).into()
+                    FieldElementExpression::Number(BN128::from(6)).into()
                 )]
             );
 
-            let e: FieldElementExpression<FieldPrime> =
+            let e: FieldElementExpression<BN128> =
                 FieldElementExpression::Identifier("a".into());
             assert_eq!(
                 u.fold_field_expression(e),
@@ -319,13 +319,13 @@ mod tests {
 
             let mut u = Unroller::new();
 
-            let s: TypedStatement<FieldPrime> =
+            let s: TypedStatement<BN128> =
                 TypedStatement::Declaration(Variable::field_element("a".into()));
             assert_eq!(u.fold_statement(s), vec![]);
 
             let s = TypedStatement::Definition(
                 TypedAssignee::Identifier(Variable::field_element("a".into())),
-                FieldElementExpression::Number(FieldPrime::from(5)).into(),
+                FieldElementExpression::Number(BN128::from(5)).into(),
             );
             assert_eq!(
                 u.fold_statement(s),
@@ -333,7 +333,7 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("a").version(0)
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(5)).into()
+                    FieldElementExpression::Number(BN128::from(5)).into()
                 )]
             );
 
@@ -341,7 +341,7 @@ mod tests {
                 TypedAssignee::Identifier(Variable::field_element("a".into())),
                 FieldElementExpression::Add(
                     box FieldElementExpression::Identifier("a".into()),
-                    box FieldElementExpression::Number(FieldPrime::from(1)),
+                    box FieldElementExpression::Number(BN128::from(1)),
                 )
                 .into(),
             );
@@ -353,7 +353,7 @@ mod tests {
                     )),
                     FieldElementExpression::Add(
                         box FieldElementExpression::Identifier(Identifier::from("a").version(0)),
-                        box FieldElementExpression::Number(FieldPrime::from(1))
+                        box FieldElementExpression::Number(BN128::from(1))
                     )
                     .into()
                 )]
@@ -374,13 +374,13 @@ mod tests {
 
             let mut u = Unroller::new();
 
-            let s: TypedStatement<FieldPrime> =
+            let s: TypedStatement<BN128> =
                 TypedStatement::Declaration(Variable::field_element("a".into()));
             assert_eq!(u.fold_statement(s), vec![]);
 
             let s = TypedStatement::Definition(
                 TypedAssignee::Identifier(Variable::field_element("a".into())),
-                FieldElementExpression::Number(FieldPrime::from(2)).into(),
+                FieldElementExpression::Number(BN128::from(2)).into(),
             );
             assert_eq!(
                 u.fold_statement(s),
@@ -388,11 +388,11 @@ mod tests {
                     TypedAssignee::Identifier(Variable::field_element(
                         Identifier::from("a").version(0)
                     )),
-                    FieldElementExpression::Number(FieldPrime::from(2)).into()
+                    FieldElementExpression::Number(BN128::from(2)).into()
                 )]
             );
 
-            let s: TypedStatement<FieldPrime> = TypedStatement::MultipleDefinition(
+            let s: TypedStatement<BN128> = TypedStatement::MultipleDefinition(
                 vec![Variable::field_element("a".into())],
                 TypedExpressionList::FunctionCall(
                     String::from("foo"),
@@ -427,7 +427,7 @@ mod tests {
 
             let mut u = Unroller::new();
 
-            let s: TypedStatement<FieldPrime> =
+            let s: TypedStatement<BN128> =
                 TypedStatement::Declaration(Variable::field_array("a".into(), 2));
             assert_eq!(u.fold_statement(s), vec![]);
 
@@ -436,8 +436,8 @@ mod tests {
                 FieldElementArrayExpression::Value(
                     2,
                     vec![
-                        FieldElementExpression::Number(FieldPrime::from(1)),
-                        FieldElementExpression::Number(FieldPrime::from(1)),
+                        FieldElementExpression::Number(BN128::from(1)),
+                        FieldElementExpression::Number(BN128::from(1)),
                     ],
                 )
                 .into(),
@@ -453,20 +453,20 @@ mod tests {
                     FieldElementArrayExpression::Value(
                         2,
                         vec![
-                            FieldElementExpression::Number(FieldPrime::from(1)),
-                            FieldElementExpression::Number(FieldPrime::from(1))
+                            FieldElementExpression::Number(BN128::from(1)),
+                            FieldElementExpression::Number(BN128::from(1))
                         ]
                     )
                     .into()
                 )]
             );
 
-            let s: TypedStatement<FieldPrime> = TypedStatement::Definition(
+            let s: TypedStatement<BN128> = TypedStatement::Definition(
                 TypedAssignee::ArrayElement(
                     box TypedAssignee::Identifier(Variable::field_array("a".into(), 2)),
-                    box FieldElementExpression::Number(FieldPrime::from(1)),
+                    box FieldElementExpression::Number(BN128::from(1)),
                 ),
-                FieldElementExpression::Number(FieldPrime::from(2)).into(),
+                FieldElementExpression::Number(BN128::from(2)).into(),
             );
 
             assert_eq!(
@@ -481,30 +481,30 @@ mod tests {
                         vec![
                             FieldElementExpression::IfElse(
                                 box BooleanExpression::Eq(
-                                    box FieldElementExpression::Number(FieldPrime::from(1)),
-                                    box FieldElementExpression::Number(FieldPrime::from(0))
+                                    box FieldElementExpression::Number(BN128::from(1)),
+                                    box FieldElementExpression::Number(BN128::from(0))
                                 ),
-                                box FieldElementExpression::Number(FieldPrime::from(2)),
+                                box FieldElementExpression::Number(BN128::from(2)),
                                 box FieldElementExpression::Select(
                                     box FieldElementArrayExpression::Identifier(
                                         2,
                                         Identifier::from("a").version(0)
                                     ),
-                                    box FieldElementExpression::Number(FieldPrime::from(0))
+                                    box FieldElementExpression::Number(BN128::from(0))
                                 ),
                             ),
                             FieldElementExpression::IfElse(
                                 box BooleanExpression::Eq(
-                                    box FieldElementExpression::Number(FieldPrime::from(1)),
-                                    box FieldElementExpression::Number(FieldPrime::from(1))
+                                    box FieldElementExpression::Number(BN128::from(1)),
+                                    box FieldElementExpression::Number(BN128::from(1))
                                 ),
-                                box FieldElementExpression::Number(FieldPrime::from(2)),
+                                box FieldElementExpression::Number(BN128::from(2)),
                                 box FieldElementExpression::Select(
                                     box FieldElementArrayExpression::Identifier(
                                         2,
                                         Identifier::from("a").version(0)
                                     ),
-                                    box FieldElementExpression::Number(FieldPrime::from(1))
+                                    box FieldElementExpression::Number(BN128::from(1))
                                 ),
                             ),
                         ]

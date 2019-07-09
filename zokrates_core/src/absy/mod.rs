@@ -18,7 +18,7 @@ use crate::types::Signature;
 use crate::flat_absy::*;
 use crate::imports::ImportNode;
 use std::fmt;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 pub type Identifier<'ast> = &'ast str;
 

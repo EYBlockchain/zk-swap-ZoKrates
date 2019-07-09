@@ -1,17 +1,18 @@
 extern crate libc;
-
 use self::libc::{c_char, c_int};
-use ir;
-use proof_system::mnt::utils::libsnark::{prepare_generate_proof, prepare_setup};
-use proof_system::ProofSystem;
 
 use std::fs::File;
 use std::io::BufReader;
 
-use zokrates_field::FieldPrime;
+use zokrates_field::BN128;
+
+use ir;
+
+use super::utils::libsnark::{prepare_generate_proof, prepare_setup};
+use super::ProofSystem;
 
 extern "C" {
-    fn _pghr13_mnt6_setup(
+    fn _pghr13_mnt4_setup(
         A: *const u8,
         B: *const u8,
         C: *const u8,
@@ -25,7 +26,7 @@ extern "C" {
         vk_path: *const c_char,
     ) -> bool;
 
-    fn _pghr13_mnt6_generate_proof(
+    fn _pghr13_mnt4_generate_proof(
         pk_path: *const c_char,
         proof_path: *const c_char,
         public_inputs: *const u8,
@@ -33,18 +34,14 @@ extern "C" {
         private_inputs: *const u8,
         private_inputs_length: c_int,
     ) -> bool;
+
 }
 
-pub struct PGHR13_MNT6 {}
+pub struct PGHR13_MNT4 {}
 
-impl PGHR13_MNT6 {
-    pub fn new() -> PGHR13_MNT6 {
-        PGHR13_MNT6 {}
-    }
-}
-
-impl ProofSystem for PGHR13_MNT6 {
-    fn setup(&self, program: ir::Prog<FieldPrime>, pk_path: &str, vk_path: &str) {
+impl ProofSystem for PGHR13_MNT4 {
+    type F = BN128;
+    fn setup(&self, program: ir::Prog<Self::F>, pk_path: &str, vk_path: &str) {
         let (
             a_arr,
             b_arr,
@@ -60,7 +57,7 @@ impl ProofSystem for PGHR13_MNT6 {
         ) = prepare_setup(program, pk_path, vk_path);
 
         unsafe {
-            _pghr13_mnt6_setup(
+            _pghr13_mnt4_setup(
                 a_arr.as_ptr(),
                 b_arr.as_ptr(),
                 c_arr.as_ptr(),
@@ -78,8 +75,8 @@ impl ProofSystem for PGHR13_MNT6 {
 
     fn generate_proof(
         &self,
-        program: ir::Prog<FieldPrime>,
-        witness: ir::Witness<FieldPrime>,
+        program: ir::Prog<Self::F>,
+        witness: ir::Witness<Self::F>,
         pk_path: &str,
         proof_path: &str,
     ) -> bool {
@@ -98,7 +95,7 @@ impl ProofSystem for PGHR13_MNT6 {
         );
 
         unsafe {
-            _pghr13_mnt6_generate_proof(
+            _pghr13_mnt4_generate_proof(
                 pk_path_cstring.as_ptr(),
                 proof_path_cstring.as_ptr(),
                 public_inputs_arr[0].as_ptr(),

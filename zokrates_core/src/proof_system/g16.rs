@@ -1,19 +1,20 @@
 use crate::ir;
-use crate::proof_system::bn128::utils::bellman::Computation;
-use crate::proof_system::bn128::utils::solidity::{SOLIDITY_G2_ADDITION_LIB, SOLIDITY_PAIRING_LIB};
-use crate::proof_system::ProofSystem;
+use super::utils::bellman::Computation;
+use super::utils::solidity::{SOLIDITY_G2_ADDITION_LIB, SOLIDITY_PAIRING_LIB};
+use super::ProofSystem;
 use bellman::groth16::Parameters;
 use regex::Regex;
 use std::fs::File;
 use std::io::{BufRead, BufReader, Write};
 use std::path::PathBuf;
-use zokrates_field::field::FieldPrime;
+use zokrates_field::Field;
 
 const G16_WARNING: &str = "WARNING: You are using the G16 scheme which is subject to malleability. See zokrates.github.io/reference/proving_schemes.html#g16-malleability for implications.";
 
 pub struct G16 {}
-impl ProofSystem for G16 {
-    fn setup(&self, program: ir::Prog<FieldPrime>, pk_path: &str, vk_path: &str) {
+
+impl<F: Field> ProofSystem<F> for G16 {
+    fn setup(&self, program: ir::Prog<F>, pk_path: &str, vk_path: &str) {
         std::env::set_var("BELLMAN_VERBOSE", "0");
 
         println!("{}", G16_WARNING);
@@ -29,8 +30,8 @@ impl ProofSystem for G16 {
 
     fn generate_proof(
         &self,
-        program: ir::Prog<FieldPrime>,
-        witness: ir::Witness<FieldPrime>,
+        program: ir::Prog<F>,
+        witness: ir::Witness<F>,
         pk_path: &str,
         proof_path: &str,
     ) -> bool {
@@ -138,7 +139,7 @@ impl ProofSystem for G16 {
 
 mod serialize {
 
-    use crate::proof_system::bn128::utils::bellman::{
+    use crate::proof_system::utils::bellman::{
         parse_fr_json, parse_g1_hex, parse_g1_json, parse_g2_hex, parse_g2_json,
     };
     use bellman::groth16::{Proof, VerifyingKey};
@@ -250,63 +251,3 @@ contract Verifier {
     }
 }
 "#;
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    mod serialize {
-        use super::*;
-
-        mod proof {
-            use super::*;
-            use crate::flat_absy::FlatVariable;
-            use crate::ir::*;
-            use crate::proof_system::bn128::g16::serialize::serialize_proof;
-
-            #[allow(dead_code)]
-            #[derive(Deserialize)]
-            struct G16ProofPoints {
-                a: [String; 2],
-                b: [[String; 2]; 2],
-                c: [String; 2],
-            }
-
-            #[allow(dead_code)]
-            #[derive(Deserialize)]
-            struct G16Proof {
-                proof: G16ProofPoints,
-                inputs: Vec<String>,
-            }
-
-            #[test]
-            fn serialize() {
-                let program: Prog<FieldPrime> = Prog {
-                    main: Function {
-                        id: String::from("main"),
-                        arguments: vec![FlatVariable::new(0)],
-                        returns: vec![FlatVariable::public(0)],
-                        statements: vec![Statement::Constraint(
-                            FlatVariable::new(0).into(),
-                            FlatVariable::public(0).into(),
-                        )],
-                    },
-                    private: vec![false],
-                };
-
-                let witness = program
-                    .clone()
-                    .execute::<FieldPrime>(&vec![FieldPrime::from(42)])
-                    .unwrap();
-                let computation = Computation::with_witness(program, witness);
-
-                let public_inputs_values = computation.public_inputs_values();
-
-                let params = computation.clone().setup();
-                let proof = computation.prove(&params);
-
-                let serialized_proof = serialize_proof(&proof, &public_inputs_values);
-                serde_json::from_str::<G16Proof>(&serialized_proof).unwrap();
-            }
-        }
-    }
-}

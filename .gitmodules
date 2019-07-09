@@ -1,12 +1,12 @@
 [submodule "deps/sapling-crypto"]
 	path = deps/sapling-crypto
-	url = ssh://git@git.lab-apps.fr/zkp/sapling-crypto
+	url = git@github.com:EYBlockchain/zk-swap-sapling-crypto
 [submodule "deps/ff"]
 	path = deps/ff
-	url = ssh://git@git.lab-apps.fr/zkp/ff
+	url = git@github.com:EYBlockchain/zk-swap-ff
 [submodule "deps/bellman"]
 	path = deps/bellman
-	url = ssh://git@git.lab-apps.fr/zkp/bellman
+	url = git@github.com:EYBlockchain/zk-swap-bellman
 [submodule "deps/pairing"]
 	path = deps/pairing
-	url = ssh://git@git.lab-apps.fr/zkp/pairing
+	url = git@github.com:EYBlockchain/zk-swap-pairing

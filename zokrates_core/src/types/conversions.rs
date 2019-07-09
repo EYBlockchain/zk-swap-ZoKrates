@@ -5,7 +5,7 @@ use crate::helpers::{DirectiveStatement, Helper};
 use crate::types::signature::Signature;
 use crate::types::Type;
 use std::collections::HashMap;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 fn use_variable(
     layout: &mut HashMap<String, FlatVariable>,
@@ -167,7 +167,7 @@ pub fn cast<T: Field>(from: &Type, to: &Type) -> FlatFunction<T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[cfg(test)]
     mod cast {
@@ -175,7 +175,7 @@ mod tests {
 
         #[test]
         fn bool_to_field() {
-            let b2f: FlatFunction<FieldPrime> = cast(&Type::Boolean, &Type::FieldElement);
+            let b2f: FlatFunction<BN128> = cast(&Type::Boolean, &Type::FieldElement);
             assert_eq!(b2f.id, String::from("_bool_to_field"));
             assert_eq!(
                 b2f.arguments,
@@ -202,7 +202,7 @@ mod tests {
 
         #[test]
         fn split254() {
-            let unpack: FlatProg<FieldPrime> = split();
+            let unpack: FlatProg<BN128> = split();
             let unpack = &unpack.functions[0];
 
             assert_eq!(unpack.id, String::from("main"));
@@ -212,12 +212,12 @@ mod tests {
             );
             assert_eq!(
                 unpack.statements.len(),
-                FieldPrime::get_required_bits() + 1 + 1 + 1
+                BN128::get_required_bits() + 1 + 1 + 1
             ); // 128 bit checks, 1 directive, 1 sum check, 1 return
             assert_eq!(
                 unpack.statements[0],
                 FlatStatement::Directive(DirectiveStatement::new(
-                    (0..FieldPrime::get_required_bits())
+                    (0..BN128::get_required_bits())
                         .map(|i| FlatVariable::new(i + 1))
                         .collect(),
                     Helper::bits(),
@@ -227,7 +227,7 @@ mod tests {
             assert_eq!(
                 *unpack.statements.last().unwrap(),
                 FlatStatement::Return(FlatExpressionList {
-                    expressions: (0..FieldPrime::get_required_bits())
+                    expressions: (0..BN128::get_required_bits())
                         .map(|i| FlatExpression::Identifier(FlatVariable::new(i + 1)))
                         .collect()
                 })

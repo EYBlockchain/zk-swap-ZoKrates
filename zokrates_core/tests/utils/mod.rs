@@ -4,7 +4,7 @@ extern crate zokrates_field;
 use std::io;
 use zokrates_core::compile::{compile as generic_compile, CompileErrors};
 use zokrates_core::ir;
-use zokrates_field::field::{Field, FieldPrime};
+use zokrates_field::{Field, BN128};
 
 #[derive(Serialize, Deserialize)]
 pub struct Tests {
@@ -25,7 +25,7 @@ pub struct Test {
 pub type TestResult = Result<Output, ir::Error>;
 
 #[derive(PartialEq, Debug)]
-pub struct ComparableResult(Result<Vec<FieldPrime>, ir::Error>);
+pub struct ComparableResult(Result<Vec<BN128>, ir::Error>);
 
 #[derive(Serialize, Deserialize)]
 pub struct Output {
@@ -34,8 +34,8 @@ pub struct Output {
 
 type Val = String;
 
-impl From<ir::ExecutionResult<FieldPrime>> for ComparableResult {
-    fn from(r: ir::ExecutionResult<FieldPrime>) -> ComparableResult {
+impl From<ir::ExecutionResult<BN128>> for ComparableResult {
+    fn from(r: ir::ExecutionResult<BN128>) -> ComparableResult {
         ComparableResult(r.map(|v| v.return_values()))
     }
 }
@@ -45,14 +45,14 @@ impl From<TestResult> for ComparableResult {
         ComparableResult(r.map(|v| {
             v.values
                 .iter()
-                .map(|v| FieldPrime::try_from_dec_str(v).unwrap())
+                .map(|v| BN128::try_from_dec_str(v).unwrap())
                 .collect()
         }))
     }
 }
 
 pub fn compare(
-    result: ir::ExecutionResult<FieldPrime>,
+    result: ir::ExecutionResult<BN128>,
     expected: TestResult,
 ) -> Result<(), String> {
     // extract outputs from result
@@ -81,8 +81,8 @@ pub fn read_file(path: &str) -> String {
     contents
 }
 
-pub fn compile(code: &str) -> Result<ir::Prog<FieldPrime>, CompileErrors> {
-    generic_compile::<FieldPrime, &[u8], &[u8], io::Error>(&mut code.as_bytes(), None, None)
+pub fn compile(code: &str) -> Result<ir::Prog<BN128>, CompileErrors> {
+    generic_compile::<BN128, &[u8], &[u8], io::Error>(&mut code.as_bytes(), None, None)
 }
 
 macro_rules! zokrates_test {
@@ -91,7 +91,7 @@ macro_rules! zokrates_test {
             #[test]
             fn $name() {
 
-                use zokrates_field::field::{Field, FieldPrime};
+                use zokrates_field::{Field, BN128};
 
                 let code_string = $crate::utils::read_file(&format!("./{}.code", stringify!($name)));
                 let test_string = $crate::utils::read_file(&format!("./{}.json", stringify!($name)));
@@ -102,7 +102,7 @@ macro_rules! zokrates_test {
 
                 for test in t.tests.into_iter() {
                     let input = &test.input.values;
-                    let output = bin.execute(&input.iter().map(|v| FieldPrime::try_from_dec_str(v).unwrap()).collect());
+                    let output = bin.execute(&input.iter().map(|v| BN128::try_from_dec_str(v).unwrap()).collect());
 
                     let context = format!("
 {}

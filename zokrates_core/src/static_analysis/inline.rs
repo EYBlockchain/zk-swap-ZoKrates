@@ -3,7 +3,7 @@ use crate::typed_absy::Folder;
 use crate::typed_absy::*;
 use crate::types::{Signature, Type};
 use std::collections::HashMap;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 pub struct Inliner<'ast, T: Field> {
     functions: Vec<TypedFunction<'ast, T>>,
@@ -253,7 +253,7 @@ impl<'ast, T: Field> Folder<'ast, T> for Inliner<'ast, T> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[cfg(test)]
     mod heuristics {
@@ -261,7 +261,7 @@ mod tests {
 
         #[test]
         fn inline_constant_field() {
-            let f: TypedFunction<FieldPrime> = TypedFunction {
+            let f: TypedFunction<BN128> = TypedFunction {
                 id: "foo",
                 arguments: vec![
                     Parameter::private(Variable::field_element("a".into())),
@@ -280,7 +280,7 @@ mod tests {
             };
 
             let arguments = vec![
-                FieldElementExpression::Number(FieldPrime::from(0)).into(),
+                FieldElementExpression::Number(BN128::from(0)).into(),
                 FieldElementArrayExpression::Identifier(3, Identifier::from("random")).into(),
             ];
 
@@ -291,7 +291,7 @@ mod tests {
 
         #[test]
         fn no_inline_non_constant_field() {
-            let f: TypedFunction<FieldPrime> = TypedFunction {
+            let f: TypedFunction<BN128> = TypedFunction {
                 id: "foo",
                 arguments: vec![
                     Parameter::private(Variable::field_element("a".into())),

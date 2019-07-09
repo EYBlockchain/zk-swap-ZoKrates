@@ -1,29 +1,39 @@
-mod bn128;
-mod mnt;
-
 use std::fs::File;
-use zokrates_field::field::FieldPrime;
+use zokrates_field::Field;
 
-pub use self::bn128::G16;
+mod utils;
 #[cfg(feature = "libsnark")]
-pub use self::bn128::GM17;
+mod pghr13;
 #[cfg(feature = "libsnark")]
-pub use self::bn128::PGHR13;
+mod pghr13_mnt4;
 #[cfg(feature = "libsnark")]
-pub use self::mnt::PGHR13_MNT4;
+mod pghr13_mnt6;
+// mod g16
 #[cfg(feature = "libsnark")]
-pub use self::mnt::PGHR13_MNT6;
+mod gm17;
+
+#[cfg(feature = "libsnark")]
+pub use self::pghr13::PGHR13;
+#[cfg(feature = "libsnark")]
+pub use self::pghr13_mnt4::PGHR13_MNT4;
+#[cfg(feature = "libsnark")]
+pub use self::pghr13_mnt6::PGHR13_MNT6;
+// pub use self::g16::G16;
+#[cfg(feature = "libsnark")]
+pub use self::gm17::GM17;
 
 use crate::ir;
 use std::io::BufReader;
 
 pub trait ProofSystem {
-    fn setup(&self, program: ir::Prog<FieldPrime>, pk_path: &str, vk_path: &str);
+    type F: Field;
+
+    fn setup(&self, program: ir::Prog<Self::F>, pk_path: &str, vk_path: &str);
 
     fn generate_proof(
         &self,
-        program: ir::Prog<FieldPrime>,
-        witness: ir::Witness<FieldPrime>,
+        program: ir::Prog<Self::F>,
+        witness: ir::Witness<Self::F>,
         pk_path: &str,
         proof_path: &str,
     ) -> bool;

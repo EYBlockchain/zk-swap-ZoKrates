@@ -17,7 +17,7 @@ use crate::flat_absy::*;
 use crate::imports::Import;
 use crate::types::Type;
 use std::fmt;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 
 pub use self::folder::Folder;
 

@@ -1,7 +1,7 @@
 use absy;
 use imports;
 use types::Type;
-use zokrates_field::field::Field;
+use zokrates_field::Field;
 use zokrates_pest_ast as pest;
 
 impl<'ast, T: Field> From<pest::File<'ast>> for absy::Prog<'ast, T> {
@@ -531,20 +531,20 @@ impl<'ast> From<pest::Type<'ast>> for Type {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use zokrates_field::field::FieldPrime;
+    use zokrates_field::BN128;
 
     #[test]
     fn forty_two() {
         let source = "def main() -> (field): return 42
 		";
         let ast = pest::generate_ast(&source).unwrap();
-        let expected: absy::Prog<FieldPrime> = absy::Prog {
+        let expected: absy::Prog<BN128> = absy::Prog {
             functions: vec![absy::Function {
                 id: &source[4..8],
                 arguments: vec![],
                 statements: vec![absy::Statement::Return(
                     absy::ExpressionList {
-                        expressions: vec![absy::Expression::Number(FieldPrime::from(42)).into()],
+                        expressions: vec![absy::Expression::Number(BN128::from(42)).into()],
                     }
                     .into(),
                 )
@@ -557,7 +557,7 @@ mod tests {
             imports: vec![],
             imported_functions: vec![],
         };
-        assert_eq!(absy::Prog::<FieldPrime>::from(ast), expected);
+        assert_eq!(absy::Prog::<BN128>::from(ast), expected);
     }
 
     #[test]
@@ -566,7 +566,7 @@ mod tests {
         ";
         let ast = pest::generate_ast(&source).unwrap();
 
-        let expected: absy::Prog<FieldPrime> = absy::Prog {
+        let expected: absy::Prog<BN128> = absy::Prog {
             functions: vec![absy::Function {
                 id: &source[4..8],
                 arguments: vec![
@@ -576,7 +576,7 @@ mod tests {
                 ],
                 statements: vec![absy::Statement::Return(
                     absy::ExpressionList {
-                        expressions: vec![absy::Expression::Number(FieldPrime::from(42)).into()],
+                        expressions: vec![absy::Expression::Number(BN128::from(42)).into()],
                     }
                     .into(),
                 )
@@ -590,6 +590,6 @@ mod tests {
             imported_functions: vec![],
         };
 
-        assert_eq!(absy::Prog::<FieldPrime>::from(ast), expected);
+        assert_eq!(absy::Prog::<BN128>::from(ast), expected);
     }
 }

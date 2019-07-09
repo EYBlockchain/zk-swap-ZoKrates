@@ -14,8 +14,9 @@ use std::path::{Path, PathBuf};
 use std::string::String;
 use zokrates_core::compile::compile;
 use zokrates_core::ir;
+#[cfg(feature = "libsnark")]
 use zokrates_core::proof_system::*;
-use zokrates_field::field::{Field, FieldPrime};
+use zokrates_field::{Field, BN128};
 use zokrates_fs_resolver::resolve as fs_resolve;
 
 fn main() {
@@ -23,6 +24,32 @@ fn main() {
         println!("{}", e);
         std::process::exit(1);
     })
+}
+
+enum Scheme {
+    NoScheme,
+    #[cfg(feature = "libsnark")]
+    PGHR13_BN128(PGHR13),
+    #[cfg(feature = "libsnark")]
+    PGHR13_MNT4(PGHR13_MNT4),
+    #[cfg(feature = "libsnark")]
+    PGHR13_MNT6(PGHR13_MNT6),
+    #[cfg(feature = "libsnark")]
+    GM17_BN128(GM17),
+}
+
+fn get_scheme(scheme_str: &str) -> Scheme {
+    match scheme_str.to_lowercase().as_ref() {
+        #[cfg(feature = "libsnark")]
+        "pghr13" => match env::var("ZOKRATES_CURVE").unwrap_or(String::from("")).as_ref() {
+            "MNT4" => Scheme::PGHR13_MNT4(PGHR13_MNT4{}),
+            "MNT6" => Scheme::PGHR13_MNT6(PGHR13_MNT6{}),
+            _ => Scheme::PGHR13_BN128(PGHR13{}),
+        },
+        #[cfg(feature = "libsnark")]
+        "gm17" => Scheme::GM17_BN128(GM17{}),
+        "" => Scheme::NoScheme
+    }
 }
 
 fn cli() -> Result<(), String> {
@@ -95,7 +122,7 @@ fn cli() -> Result<(), String> {
         .arg(Arg::with_name("proving-scheme")
             .short("s")
             .long("proving-scheme")
-            .help("Proving scheme to use in the setup. Available options are G16 (default), PGHR13 and GM17")
+            .help("Proving scheme to use in the setup. Available options are PGHR13, G16 and GM17")
             .value_name("FILE")
             .takes_value(true)
             .required(false)
@@ -128,7 +155,7 @@ fn cli() -> Result<(), String> {
         ).arg(Arg::with_name("proving-scheme")
             .short("s")
             .long("proving-scheme")
-            .help("Proving scheme to use to export the verifier. Available options are G16 (default), PGHR13 and GM17")
+            .help("Proving scheme to use to export the verifier. Available options are PGHR13, G16 and GM17")
             .value_name("FILE")
             .takes_value(true)
             .required(false)
@@ -256,7 +283,7 @@ fn cli() -> Result<(), String> {
 
             let mut reader = BufReader::new(file);
 
-            let program_flattened: ir::Prog<FieldPrime> =
+            let program_flattened: ir::Prog<BN128> =
                 compile(&mut reader, Some(location), Some(fs_resolve))
                     .map_err(|e| format!("Compilation failed:\n\n {}", e))?;
 
@@ -309,7 +336,7 @@ fn cli() -> Result<(), String> {
 
             let mut reader = BufReader::new(file);
 
-            let program_ast: ir::Prog<FieldPrime> =
+            let program_ast: ir::Prog<BN128> =
                 deserialize_from(&mut reader, Infinite).map_err(|why| why.to_string())?;
 
             // print deserialized flattened program
@@ -324,7 +351,7 @@ fn cli() -> Result<(), String> {
             let arguments: Vec<_> = match sub_matches.values_of("arguments") {
                 // take inline arguments
                 Some(p) => p
-                    .map(|x| FieldPrime::try_from_dec_str(x).map_err(|_| x.to_string()))
+                    .map(|x| BN128::try_from_dec_str(x).map_err(|_| x.to_string()))
                     .collect(),
                 // take stdin arguments
                 None => {
@@ -337,7 +364,7 @@ fn cli() -> Result<(), String> {
                                 input
                                     .split(" ")
                                     .map(|x| {
-                                        FieldPrime::try_from_dec_str(x).map_err(|_| x.to_string())
+                                        BN128::try_from_dec_str(x).map_err(|_| x.to_string())
                                     })
                                     .collect()
                             }
@@ -376,7 +403,7 @@ fn cli() -> Result<(), String> {
                 .map_err(|why| format!("could not save witness: {:?}", why))?;
         }
         ("setup", Some(sub_matches)) => {
-            let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap())?;
+            let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap());
 
             println!("Performing setup...");
 
@@ -386,7 +413,7 @@ fn cli() -> Result<(), String> {
 
             let mut reader = BufReader::new(file);
 
-            let program: ir::Prog<FieldPrime> =
+            let program: ir::Prog<BN128> =
                 deserialize_from(&mut reader, Infinite).map_err(|why| format!("{:?}", why))?;
 
             // print deserialized flattened program
@@ -399,11 +426,15 @@ fn cli() -> Result<(), String> {
             let vk_path = sub_matches.value_of("verification-key-path").unwrap();
 
             // run setup phase
-            scheme.setup(program, pk_path, vk_path);
+            match scheme {
+                #[cfg(feature = "libsnark")]
+                Scheme::PGHR13_BN128(s) => s.setup(program, pk_path, vk_path),
+                _ => panic!("no scheme")
+            }
         }
         ("export-verifier", Some(sub_matches)) => {
             {
-                let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap())?;
+                let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap());
 
                 println!("Exporting verifier...");
 
@@ -413,7 +444,11 @@ fn cli() -> Result<(), String> {
                     .map_err(|why| format!("couldn't open {}: {}", input_path.display(), why))?;
                 let reader = BufReader::new(input_file);
 
-                let verifier = scheme.export_solidity_verifier(reader);
+                let verifier: String = match scheme {
+                    #[cfg(feature = "libsnark")]
+                    Scheme::PGHR13_BN128(s) => Some(s.export_solidity_verifier(reader)),
+                    _ => None
+                }.unwrap();
 
                 //write output file
                 let output_path = Path::new(sub_matches.value_of("output").unwrap());
@@ -431,7 +466,7 @@ fn cli() -> Result<(), String> {
         ("generate-proof", Some(sub_matches)) => {
             println!("Generating proof...");
 
-            let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap())?;
+            let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap());
 
             // deserialize witness
             let witness_path = Path::new(sub_matches.value_of("witness").unwrap());
@@ -452,12 +487,16 @@ fn cli() -> Result<(), String> {
 
             let mut reader = BufReader::new(program_file);
 
-            let program: ir::Prog<FieldPrime> =
+            let program: ir::Prog<BN128> =
                 deserialize_from(&mut reader, Infinite).map_err(|why| format!("{:?}", why))?;
 
             println!(
                 "generate-proof successful: {:?}",
-                scheme.generate_proof(program, witness, pk_path, proof_path)
+                match scheme {
+                #[cfg(feature = "libsnark")]
+                Scheme::PGHR13_BN128(s) => s.generate_proof(program, witness, pk_path, proof_path),
+                _ => None
+                }.unwrap()
             );
         }
         ("print-proof", Some(sub_matches)) => {
@@ -516,21 +555,6 @@ fn cli() -> Result<(), String> {
     Ok(())
 }
 
-fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
-    match scheme_str.to_lowercase().as_ref() {
-        #[cfg(feature = "libsnark")]
-        "pghr13" => match env::var("ZOKRATES_CURVE").unwrap_or(String::from("")).as_ref() {
-            "MNT4" => Ok(&PGHR13_MNT4 {}),
-            "MNT6" => Ok(&PGHR13_MNT6 {}),
-            _ => Ok(&PGHR13 {}),
-        },
-        #[cfg(feature = "libsnark")]
-        "gm17" => Ok(&GM17 {}),
-        "g16" => Ok(&G16 {}),
-        s => Err(format!("Backend \"{}\" not supported", s)),
-    }
-}
-
 #[cfg(test)]
 mod tests {
     extern crate glob;
@@ -562,7 +586,7 @@ mod tests {
                 .into_string()
                 .unwrap();
 
-            let _: ir::Prog<FieldPrime> =
+            let _: ir::Prog<BN128> =
                 compile(&mut reader, Some(location), Some(fs_resolve)).unwrap();
         }
     }
@@ -589,11 +613,11 @@ mod tests {
 
             let mut reader = BufReader::new(file);
 
-            let program_flattened: ir::Prog<FieldPrime> =
+            let program_flattened: ir::Prog<BN128> =
                 compile(&mut reader, Some(location), Some(fs_resolve)).unwrap();
 
             let _ = program_flattened
-                .execute(&vec![FieldPrime::from(0)])
+                .execute(&vec![BN128::from(0)])
                 .unwrap();
         }
     }
@@ -621,11 +645,11 @@ mod tests {
 
             let mut reader = BufReader::new(file);
 
-            let program_flattened: ir::Prog<FieldPrime> =
+            let program_flattened: ir::Prog<BN128> =
                 compile(&mut reader, Some(location), Some(fs_resolve)).unwrap();
 
             let _ = program_flattened
-                .execute(&vec![FieldPrime::from(0)])
+                .execute(&vec![BN128::from(0)])
                 .unwrap();
         }
     }
