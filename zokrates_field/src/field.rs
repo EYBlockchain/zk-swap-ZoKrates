@@ -17,13 +17,18 @@ use std::fmt;
 use std::fmt::{Debug, Display};
 use std::hash::Hash;
 use std::ops::{Add, Div, Mul, Sub};
+use std::env;
+
+fn get_r_modulus() -> BigInt {
+    match env::var("ZOKRATES_CURVE").unwrap_or(String::from("")).as_ref() {
+        "MNT4" => BigInt::parse_bytes(b"475922286169261325753349249653048451545124878552823515553267735739164647307408490559963137", 10).unwrap(),
+        "MNT6" => BigInt::parse_bytes(b"475922286169261325753349249653048451545124879242694725395555128576210262817955800483758081", 10).unwrap(),
+        _ => BigInt::parse_bytes(b"21888242871839275222246405745257275088548364400416034343698204186575808495617", 10).unwrap(),
+    }
+}
 
 lazy_static! {
-    static ref P: BigInt = BigInt::parse_bytes(
-        b"21888242871839275222246405745257275088548364400416034343698204186575808495617",
-        10
-    )
-    .unwrap();
+    static ref P: BigInt = get_r_modulus();
 }
 
 pub trait Pow<RHS> {
