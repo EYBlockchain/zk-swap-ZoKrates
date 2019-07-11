@@ -7,8 +7,6 @@
 
 #pragma once
 
-#include "util.hpp"
-
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -30,6 +28,48 @@ bool _pghr13_setup(const uint8_t* A,
           );
 
 bool _pghr13_generate_proof(const char* pk_path,
+            const char* proof_path,
+            const uint8_t* public_inputs,
+            int public_inputs_length,
+            const uint8_t* private_inputs,
+            int private_inputs_length
+          );
+
+bool _pghr13_mnt4_setup(const uint8_t* A,
+            const uint8_t* B,
+            const uint8_t* C,
+            int A_len,
+            int B_len,
+            int C_len,
+            int constraints,
+            int variables,
+            int inputs,
+            const char* pk_path,
+            const char* vk_path
+          );
+
+bool _pghr13_mnt4_generate_proof(const char* pk_path,
+            const char* proof_path,
+            const uint8_t* public_inputs,
+            int public_inputs_length,
+            const uint8_t* private_inputs,
+            int private_inputs_length
+          );
+
+bool _pghr13_mnt6_setup(const uint8_t* A,
+            const uint8_t* B,
+            const uint8_t* C,
+            int A_len,
+            int B_len,
+            int C_len,
+            int constraints,
+            int variables,
+            int inputs,
+            const char* pk_path,
+            const char* vk_path
+          );
+
+bool _pghr13_mnt6_generate_proof(const char* pk_path,
             const char* proof_path,
             const uint8_t* public_inputs,
             int public_inputs_length,

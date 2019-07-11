@@ -519,7 +519,11 @@ fn cli() -> Result<(), String> {
 fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
     match scheme_str.to_lowercase().as_ref() {
         #[cfg(feature = "libsnark")]
-        "pghr13" => Ok(&PGHR13 {}),
+        "pghr13" => match env::var("ZOKRATES_CURVE").unwrap_or(String::from("")).as_ref() {
+            "MNT4" => Ok(&PGHR13_MNT4 {}),
+            "MNT6" => Ok(&PGHR13_MNT6 {}),
+            _ => Ok(&PGHR13 {}),
+        },
         #[cfg(feature = "libsnark")]
         "gm17" => Ok(&GM17 {}),
         "g16" => Ok(&G16 {}),
