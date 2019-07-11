@@ -105,6 +105,16 @@ impl ProofSystem for GM17 {
         }
     }
 
+    fn verify_proof(
+        &self,
+        _: ir::Prog<FieldPrime>,
+        _: ir::Witness<FieldPrime>,
+        _: &str,
+        _: &str,
+    ) -> bool {
+        panic!("Not implemented");
+    }
+
     fn export_solidity_verifier(&self, reader: BufReader<File>) -> String {
         let mut lines = reader.lines();
 

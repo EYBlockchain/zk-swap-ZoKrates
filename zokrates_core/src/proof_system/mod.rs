@@ -28,5 +28,13 @@ pub trait ProofSystem {
         proof_path: &str,
     ) -> bool;
 
+    fn verify_proof(
+        &self,
+        program: ir::Prog<FieldPrime>,
+        witness: ir::Witness<FieldPrime>,
+        vk_path: &str,
+        proof_path: &str,
+    ) -> bool;
+
     fn export_solidity_verifier(&self, reader: BufReader<File>) -> String;
 }

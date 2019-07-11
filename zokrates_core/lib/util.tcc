@@ -33,7 +33,7 @@ libff::bigint<n> libsnarkBigintFromBytes(const uint8_t* _x)
 }
 
 template<mp_size_t n>
-std::string HexStringFromLibsnarkBigint(libff::bigint<n> _x){
+std::string HexStringFromLibsnarkBigint(libff::bigint<n> _x) {
   uint8_t x[mp_limb_t_size * n];
   for (unsigned i = 0; i < n; i++)
     for (unsigned j = 0; j < 8; j++)
@@ -44,7 +44,6 @@ std::string HexStringFromLibsnarkBigint(libff::bigint<n> _x){
   for (unsigned i = 0; i<mp_limb_t_size * n; i++) {
     ss << std::hex << std::setw(2) << (int)x[i];
   }
-
   return ss.str();
 }
 

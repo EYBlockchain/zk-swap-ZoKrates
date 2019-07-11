@@ -2,7 +2,7 @@ extern crate libc;
 
 use self::libc::{c_char, c_int};
 use ir;
-use proof_system::mnt::utils::libsnark::{prepare_generate_proof, prepare_setup};
+use proof_system::mnt::utils::libsnark::{prepare_setup, prepare_generate_proof, prepare_verify_proof};
 use proof_system::ProofSystem;
 
 use std::fs::File;
@@ -34,6 +34,12 @@ extern "C" {
         private_inputs_length: c_int,
     ) -> bool;
 
+    fn _pghr13_mnt4_verify_proof(
+        vk_path: *const c_char,
+        proof_path: *const c_char,
+        public_inputs: *const u8,
+        public_inputs_length: c_int,
+    ) -> bool;
 }
 
 pub struct PGHR13_MNT4 {}
@@ -110,7 +116,31 @@ impl ProofSystem for PGHR13_MNT4 {
         }
     }
 
-    fn export_solidity_verifier(&self, reader: BufReader<File>) -> String {
-        String::from("Not Implemented")
+    fn verify_proof(
+        &self,
+        program: ir::Prog<FieldPrime>,
+        witness: ir::Witness<FieldPrime>,
+        vk_path: &str,
+        proof_path: &str,
+    ) -> bool {
+        let (
+            vk_path_cstring,
+            proof_path_cstring,
+            public_inputs_arr,
+            public_inputs_length,
+        ) = prepare_verify_proof(program, witness, vk_path, proof_path);
+
+        unsafe {
+            _pghr13_mnt4_verify_proof(
+                vk_path_cstring.as_ptr(),
+                proof_path_cstring.as_ptr(),
+                public_inputs_arr[0].as_ptr(),
+                public_inputs_length as i32,
+            )
+        }
+    }
+
+    fn export_solidity_verifier(&self, _: BufReader<File>) -> String {
+        panic!("Not implemented");
     }
 }
