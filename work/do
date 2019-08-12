@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 
 clean() {
-    rm -rf out* *.json *.key witness
+    rm -rf out* witness *.json *.key *.raw
 }
 
 build() {
@@ -24,8 +24,12 @@ generate() {
     ../target/debug/zokrates generate-proof
 }
 
+verify() {
+    ../target/debug/zokrates verify-proof
+}
+
 err() {
-    echo "Possible commands: clean, build, compile, setup, witness, generate"
+    echo "Possible commands: clean, build, compile, setup, witness, generate, verify"
 }
 
 main() {

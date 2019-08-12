@@ -35,6 +35,13 @@ bool _pghr13_generate_proof(const char* pk_path,
             int private_inputs_length
           );
 
+bool _pghr13_verify_proof(
+        const char* vk_path,
+        const char* proof_path,
+        const uint8_t* public_inputs,
+        int public_inputs_length
+        );
+
 bool _pghr13_mnt4_setup(const uint8_t* A,
             const uint8_t* B,
             const uint8_t* C,
@@ -56,6 +63,13 @@ bool _pghr13_mnt4_generate_proof(const char* pk_path,
             int private_inputs_length
           );
 
+bool _pghr13_mnt4_verify_proof(
+        const char* vk_path,
+        const char* proof_path,
+        const uint8_t* public_inputs,
+        int public_inputs_length
+        );
+
 bool _pghr13_mnt6_setup(const uint8_t* A,
             const uint8_t* B,
             const uint8_t* C,
@@ -76,6 +90,13 @@ bool _pghr13_mnt6_generate_proof(const char* pk_path,
             const uint8_t* private_inputs,
             int private_inputs_length
           );
+
+bool _pghr13_mnt6_verify_proof(
+        const char* vk_path,
+        const char* proof_path,
+        const uint8_t* public_inputs,
+        int public_inputs_length
+        );
 
 #ifdef __cplusplus
 } // extern "C"
