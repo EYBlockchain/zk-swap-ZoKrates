@@ -57,8 +57,6 @@ impl ProofSystem for G16 {
 
     fn verify_proof(
         &self,
-        _: ir::Prog<FieldPrime>,
-        _: ir::Witness<FieldPrime>,
         _: &str,
         _: &str,
     ) -> bool {

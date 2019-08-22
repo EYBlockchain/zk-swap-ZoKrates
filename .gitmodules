@@ -10,3 +10,6 @@
 [submodule "deps/pairing"]
 	path = deps/pairing
 	url = git@github.com:EYBlockchain/zk-swap-pairing
+[submodule "deps/libsnark"]
+	path = deps/libsnark
+	url = git@github.com:EYBlockchain/zk-swap-libsnark.git
