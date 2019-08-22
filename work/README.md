@@ -43,10 +43,13 @@ $ ZOKRATES_CURVE=MNT6 ./do verify       # verify the aggregated proof
 ## Caution and Warning
 
 Please note this is still a work in progress:
-- All the added features have been tested for specific cases
+- All added features have been barely tested for specific cases
 - The API is not stable
-- Shortcuts have been taken to accelerate delivery (duplicate output files to used binary import for example)
-- The batching circuit has been used "as is" for now, we are still working on a more deep understanding of this feature (There still crashes on some proofs and false positive verifications)
+- Shortcuts have been taken to accelerate delivery (e.g duplicate output files to used binary import)
+- The batching circuit has been used **as is** for now
+    - There still crashes on some proofs and false positive verifications
+    - We are still working on a more deep understanding of this feature
+    - Another approach is under study for a new approach of batching
 
 ## Credits
 
