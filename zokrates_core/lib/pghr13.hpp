@@ -1,11 +1,11 @@
+#pragma once
+
 /**
  * @file pghr13.hpp
  * @author Jacob Eberhardt <jacob.eberhardt@tu-berlin.de
  * @author Dennis Kuhnert <dennis.kuhnert@campus.tu-berlin.de>
  * @date 2017
  */
-
-#pragma once
 
 #ifdef __cplusplus
 extern "C" {
@@ -37,9 +37,7 @@ bool _pghr13_generate_proof(const char* pk_path,
 
 bool _pghr13_verify_proof(
         const char* vk_path,
-        const char* proof_path,
-        const uint8_t* public_inputs,
-        int public_inputs_length
+        const char* proof_path
         );
 
 bool _pghr13_mnt4_setup(const uint8_t* A,
@@ -65,9 +63,7 @@ bool _pghr13_mnt4_generate_proof(const char* pk_path,
 
 bool _pghr13_mnt4_verify_proof(
         const char* vk_path,
-        const char* proof_path,
-        const uint8_t* public_inputs,
-        int public_inputs_length
+        const char* proof_path
         );
 
 bool _pghr13_mnt6_setup(const uint8_t* A,
@@ -93,10 +89,20 @@ bool _pghr13_mnt6_generate_proof(const char* pk_path,
 
 bool _pghr13_mnt6_verify_proof(
         const char* vk_path,
-        const char* proof_path,
-        const uint8_t* public_inputs,
-        int public_inputs_length
+        const char* proof_path
         );
+
+bool _pghr13_mnt4_mnt6_batch(
+    const char *vk_1_path, const char *proof_1_path,
+    const char *vk_2_path, const char *proof_2_path,
+    const char *agg_vk_path, const char *agg_proof_path
+    );
+
+bool _pghr13_mnt6_mnt4_batch(
+    const char *vk_1_path, const char *proof_1_path,
+    const char *vk_2_path, const char *proof_2_path,
+    const char *agg_vk_path, const char *agg_proof_path
+    );
 
 #ifdef __cplusplus
 } // extern "C"

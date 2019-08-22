@@ -137,9 +137,57 @@ std::string outputPointG2AffineAsHexJson(G2T _p)
 }
 
 template<typename T>
+void writeVectorToFile(std::string path, std::vector<T> &v) {
+  // vector<T> to ss
+  std::stringstream ss;
+  ss << v.size() << "\n";
+  for (const T& t : v)
+  {
+    ss << t << OUTPUT_NEWLINE;
+  }
+  // ss to file
+  std::ofstream fh;
+  fh.open(path, std::ios::binary);
+  ss.rdbuf()->pubseekpos(0, std::ios_base::out);
+  fh << ss.rdbuf();
+  fh.flush();
+  fh.close();
+}
+
+template<typename T>
+std::vector<T> loadVectorFromFile(std::string path)
+{
+  // file to ss
+  std::stringstream ss;
+  std::ifstream fh(path, std::ios::binary);
+  assert(fh.is_open());
+  ss << fh.rdbuf();
+  fh.close();
+  // ss to vector<T>
+  ss.rdbuf()->pubseekpos(0, std::ios_base::in);
+  std::vector<T> v;
+  size_t size;
+  ss >> size;
+  char c;
+  ss.read(&c, 1);
+  v.resize(0);
+  for (size_t i = 0; i < size; ++i)
+  {
+    T elt;
+    ss >> elt;
+    char c;
+    ss.read(&c, 1);
+    v.push_back(elt);
+  }
+  return v;
+}
+
+template<typename T>
 void writeToFile(std::string path, T& obj) {
+  // T to ss
   std::stringstream ss;
   ss << obj;
+  // ss to file
   std::ofstream fh;
   fh.open(path, std::ios::binary);
   ss.rdbuf()->pubseekpos(0, std::ios_base::out);
@@ -150,18 +198,15 @@ void writeToFile(std::string path, T& obj) {
 
 template<typename T>
 T loadFromFile(std::string path) {
+  // file to ss
   std::stringstream ss;
   std::ifstream fh(path, std::ios::binary);
-
   assert(fh.is_open());
-
   ss << fh.rdbuf();
   fh.close();
-
+  // ss to T
   ss.rdbuf()->pubseekpos(0, std::ios_base::in);
-
   T obj;
   ss >> obj;
-
   return obj;
 }

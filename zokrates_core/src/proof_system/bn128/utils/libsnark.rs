@@ -191,40 +191,6 @@ pub fn prepare_generate_proof<T: Field>(
     )
 }
 
-// proof-system-independent preparation for proof verification
-pub fn prepare_verify_proof<T: Field>(
-    program: ir::Prog<T>,
-    witness: ir::Witness<T>,
-    pk_path: &str,
-    proof_path: &str,
-) -> (CString, CString, Vec<[u8; 32]>, usize) {
-    let pk_path_cstring = CString::new(pk_path).unwrap();
-    let proof_path_cstring = CString::new(proof_path).unwrap();
-
-    // recover variable order from the program
-    let (variables, public_variables_count, _, _, _) = r1cs_program(program);
-    let witness: Vec<_> = variables.iter().map(|x| witness.0[x].clone()).collect();
-
-    // split witness into public and private inputs at offset
-    let mut public_inputs: Vec<_> = witness.clone();
-    public_inputs.split_off(public_variables_count);
-
-    let public_inputs_length = public_inputs.len();
-
-    let mut public_inputs_arr: Vec<[u8; 32]> = vec![[0u8; 32]; public_inputs_length];
-
-    //convert inputs
-    for (index, value) in public_inputs.into_iter().enumerate() {
-        public_inputs_arr[index] = vec_as_u8_32_array(&value.into_byte_vector());
-    }
-    (
-        pk_path_cstring,
-        proof_path_cstring,
-        public_inputs_arr,
-        public_inputs_length,
-    )
-}
-
 /// Returns the index of `var` in `variables`, adding `var` with incremented index if it not yet exists.
 ///
 /// # Arguments

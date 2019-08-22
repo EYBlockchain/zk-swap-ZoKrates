@@ -2,51 +2,32 @@
 extern crate cc;
 #[cfg(feature = "libsnark")]
 extern crate cmake;
-#[cfg(feature = "libsnark")]
-extern crate git2;
 
 fn main() {
     #[cfg(feature = "libsnark")]
     {
-        use git2::{Oid, Repository, ResetType};
         use std::env;
-        use std::fs::remove_dir;
         use std::path::PathBuf;
 
-        // fetch libsnark source
-
-        const LIBSNARK_URL: &'static str = "https://github.com/scipr-lab/libsnark.git";
-        const LIBSNARK_COMMIT: &'static str = "477c9dfd07b280e42369f82f89c08416319e24ae";
-
-        let libsnark_source_path = &PathBuf::from(env::var("OUT_DIR").unwrap()).join("LIBSNARK");
-
-        let repo = Repository::open(libsnark_source_path).unwrap_or_else(|_| {
-            remove_dir(libsnark_source_path).ok();
-            Repository::clone(LIBSNARK_URL, libsnark_source_path).unwrap()
-        });
-
-        let commit = Oid::from_str(LIBSNARK_COMMIT).unwrap();
-        let commit = repo.find_commit(commit).unwrap();
-
-        repo.reset(&commit.as_object(), ResetType::Hard, None)
-            .unwrap();
-
-        for mut s in repo.submodules().unwrap() {
-            s.update(true, None).unwrap();
-        }
+        // submodule path
+        let libsnark_source_path = &PathBuf::from(env::var("OUT_DIR").unwrap())
+            .parent().unwrap()
+            .parent().unwrap()
+            .parent().unwrap()
+            .parent().unwrap()
+            .parent().unwrap()
+            .join("deps")
+            .join("libsnark");
 
         // build libsnark
-
         let libsnark = cmake::Config::new(libsnark_source_path)
             .define("WITH_PROCPS", "OFF")
-            .define("CURVE", "ALT_BN128")
             .define("USE_PT_COMPRESSION", "OFF")
             .define("MONTGOMERY_OUTPUT", "ON")
             .define("BINARY_OUTPUT", "ON")
             .build();
 
         // build backends
-
         cc::Build::new()
             .cpp(true)
             .debug(cfg!(debug_assertions))
@@ -54,7 +35,6 @@ fn main() {
             .include(libsnark_source_path)
             .include(libsnark_source_path.join("depends/libff"))
             .include(libsnark_source_path.join("depends/libfqfft"))
-            .define("CURVE_ALT_BN128", None)
             .file("lib/gm17.cpp")
             .file("lib/pghr13.cpp")
             .compile("libwraplibsnark.a");
@@ -66,6 +46,8 @@ fn main() {
 
         println!("cargo:rustc-link-lib=gmp");
         println!("cargo:rustc-link-lib=gmpxx");
+        println!("cargo:rustc-link-lib=ssl");
+        println!("cargo:rustc-link-lib=crypto");
 
         #[cfg(debug_assertions)]
         {
@@ -79,4 +61,3 @@ fn main() {
         }
     }
 }
-

@@ -1,11 +1,15 @@
 #!/usr/bin/env bash
 
-clean() {
-    rm -rf out* witness *.json *.key *.raw
+build() {
+    (cd .. && cargo +nightly -Z package-features build --package zokrates_cli --features="libsnark")
 }
 
-build() {
-    (cd .. && ./build.sh)
+unbuild() {
+    (cd .. && cargo clean)
+}
+
+clean() {
+    rm -rf out* witness *.json *.key *.raw
 }
 
 compile() {
@@ -17,6 +21,7 @@ setup() {
 }
 
 witness() {
+    [ -z $1 ] && echo "missing args" >&2 && return 1
     ../target/debug/zokrates compute-witness -a "$@"
 }
 
@@ -28,13 +33,36 @@ verify() {
     ../target/debug/zokrates verify-proof
 }
 
+move() {
+    [ -z $1 ] && echo "missing args" >&2 && return 1
+    mkdir -p "$1"
+    cp verification.key* "$1"
+    mv proof.json* "$1"
+}
+
+batch() {
+    [ $# -ne 4 ] && echo "missing args" >&2 && return 1
+    ../target/debug/zokrates batch --from_curve=$1 --to_curve=$2 --from_1=$3 --from_2=$4
+}
+
 err() {
-    echo "Possible commands: clean, build, compile, setup, witness, generate, verify"
+    echo "Possible commands: build, unbuild, clean, compile, setup, witness, generate, verify, move, batch"
 }
 
 main() {
     local cmd; cmd=$1; shift
     [ -z "$cmd" ] && err && return 1
+    [ $cmd != build ] \
+        && [ $cmd != unbuild ] \
+        && [ $cmd != clean ] \
+        && [ $cmd != compile ] \
+        && [ $cmd != setup ] \
+        && [ $cmd != witness ] \
+        && [ $cmd != generate ] \
+        && [ $cmd != verify ] \
+        && [ $cmd != mode ] \
+        && [ $cmd != batch ] \
+        && err && return 1
     $cmd "$@"
 }
 

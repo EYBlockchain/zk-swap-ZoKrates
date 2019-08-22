@@ -181,6 +181,26 @@ fn cli() -> Result<(), String> {
             .default_value(&default_scheme)
         )
     )
+    .subcommand(SubCommand::with_name("print-proof")
+        .about("Prints proof in chosen format [remix, json]")
+        .arg(Arg::with_name("proofpath")
+            .short("j")
+            .long("proofpath")
+            .help("Path of the JSON proof file")
+            .value_name("FILE")
+            .takes_value(true)
+            .required(false)
+            .default_value(JSON_PROOF_PATH)
+        ).arg(Arg::with_name("format")
+            .short("f")
+            .long("format")
+            .value_name("FORMAT")
+            .help("Format in which the proof should be printed. [remix, json]")
+            .takes_value(true)
+            .possible_values(&["remix", "json", "testingV1", "testingV2"])
+            .required(true)
+        )
+    )
     .subcommand(SubCommand::with_name("verify-proof")
         .about("Verify a proof for a given constraint system and witness.")
         .arg(Arg::with_name("witness")
@@ -225,26 +245,6 @@ fn cli() -> Result<(), String> {
             .default_value(&default_scheme)
         )
     )
-    .subcommand(SubCommand::with_name("print-proof")
-        .about("Prints proof in chosen format [remix, json]")
-        .arg(Arg::with_name("proofpath")
-            .short("j")
-            .long("proofpath")
-            .help("Path of the JSON proof file")
-            .value_name("FILE")
-            .takes_value(true)
-            .required(false)
-            .default_value(JSON_PROOF_PATH)
-        ).arg(Arg::with_name("format")
-            .short("f")
-            .long("format")
-            .value_name("FORMAT")
-            .help("Format in which the proof should be printed. [remix, json]")
-            .takes_value(true)
-            .possible_values(&["remix", "json", "testingV1", "testingV2"])
-            .required(true)
-        )
-    )
     .subcommand(SubCommand::with_name("export-verifier")
         .about("Exports a verifier as Solidity smart contract")
         .arg(Arg::with_name("input")
@@ -273,6 +273,33 @@ fn cli() -> Result<(), String> {
             .required(false)
             .default_value(&default_scheme)
         )
+    )
+    .subcommand(SubCommand::with_name("batch")
+        .about("Aggregate 2 PGHR13 proofs into a single proof on a pairing curve")
+        .arg(Arg::with_name("from_curve")
+             .long("from_curve")
+             .help("Simple proofs curve")
+             .takes_value(true)
+             .required(true)
+         )
+        .arg(Arg::with_name("from_1")
+             .long("from_1")
+             .help("First simple proof folder")
+             .takes_value(true)
+             .required(true)
+         )
+        .arg(Arg::with_name("from_2")
+             .long("from_2")
+             .help("Second simple proof folder")
+             .takes_value(true)
+             .required(true)
+         )
+        .arg(Arg::with_name("to_curve")
+             .long("to_curve")
+             .help("Aggregated proof curve")
+             .takes_value(true)
+             .required(true)
+         )
     )
     .get_matches();
 
@@ -528,36 +555,15 @@ fn cli() -> Result<(), String> {
                 _ => unreachable!(),
             }
         }
-	    ("verify-proof", Some(sub_matches)) => {
+        ("verify-proof", Some(sub_matches)) => {
             println!("Verifying proof...");
 
             let scheme = get_scheme(sub_matches.value_of("proving-scheme").unwrap())?;
-
-            // deserialize witness
-            let witness_path = Path::new(sub_matches.value_of("witness").unwrap());
-            let witness_file = match File::open(&witness_path) {
-                Ok(file) => file,
-                Err(why) => panic!("couldn't open {}: {}", witness_path.display(), why),
-            };
-
-            let witness = ir::Witness::read(witness_file)
-                .map_err(|why| format!("could not load witness: {:?}", why))?;
-
             let vk_path = sub_matches.value_of("verifyingkey").unwrap();
             let proof_path = sub_matches.value_of("proofpath").unwrap();
-
-            let program_path = Path::new(sub_matches.value_of("input").unwrap());
-            let program_file = File::open(&program_path)
-                .map_err(|why| format!("couldn't open {}: {}", program_path.display(), why))?;
-
-            let mut reader = BufReader::new(program_file);
-
-            let program: ir::Prog<FieldPrime> =
-                deserialize_from(&mut reader, Infinite).map_err(|why| format!("{:?}", why))?;
-
             println!(
                 "verify-proof successful: {:?}",
-                scheme.verify_proof(program, witness, vk_path, proof_path)
+                scheme.verify_proof(vk_path, proof_path)
             );
         }
         ("export-verifier", Some(sub_matches)) => {
@@ -587,6 +593,19 @@ fn cli() -> Result<(), String> {
                 println!("Finished exporting verifier.");
             }
         }
+        #[cfg(feature = "libsnark")]
+        ("batch", Some(sub_matches)) => {
+            let fc = sub_matches.value_of("from_curve").unwrap();
+            let f1 = sub_matches.value_of("from_1").unwrap();
+            let f2 = sub_matches.value_of("from_2").unwrap();
+            let tc = sub_matches.value_of("to_curve").unwrap();
+            let vk1 = format!("{}/{}", f1, VERIFICATION_KEY_DEFAULT_PATH);
+            let proof1 = format!("{}/{}", f1, JSON_PROOF_PATH);
+            let vk2 = format!("{}/{}", f2, VERIFICATION_KEY_DEFAULT_PATH);
+            let proof2 = format!("{}/{}", f2, JSON_PROOF_PATH);
+            let ok = batch(fc, tc, &vk1, &proof1, &vk2, &proof2, VERIFICATION_KEY_DEFAULT_PATH, JSON_PROOF_PATH);
+            println!("batching successful: {:?}", ok);
+        }
         _ => unreachable!(),
     }
     Ok(())
@@ -595,7 +614,10 @@ fn cli() -> Result<(), String> {
 fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
     match scheme_str.to_lowercase().as_ref() {
         #[cfg(feature = "libsnark")]
-        "pghr13" => match env::var("ZOKRATES_CURVE").unwrap_or(String::from("")).as_ref() {
+        "pghr13" => match env::var("ZOKRATES_CURVE")
+            .unwrap_or(String::from(""))
+            .as_ref()
+        {
             "MNT4" => Ok(&PGHR13_MNT4 {}),
             "MNT6" => Ok(&PGHR13_MNT6 {}),
             _ => Ok(&PGHR13 {}),
