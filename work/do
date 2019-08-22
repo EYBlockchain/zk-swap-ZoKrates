@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+export ZOKRATES_PROVING_SCHEME=PGHR13
+
 build() {
     (cd .. && cargo +nightly -Z package-features build --package zokrates_cli --features="libsnark")
 }
@@ -60,7 +62,7 @@ main() {
         && [ $cmd != witness ] \
         && [ $cmd != generate ] \
         && [ $cmd != verify ] \
-        && [ $cmd != mode ] \
+        && [ $cmd != move ] \
         && [ $cmd != batch ] \
         && err && return 1
     $cmd "$@"
