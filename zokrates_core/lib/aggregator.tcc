@@ -68,7 +68,7 @@ aggregator<from, to>::aggregator(size_t aggregation_arity, size_t inputs_count):
     const size_t digest_size = CRH_with_field_out_gadget<to_field>::get_digest_len();
     const size_t verifier_input_size_in_bits = digest_size * inputs_count * elt_size;
 
-    const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<to>::size_in_bits(digest_size * inputs_count);
+    const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<to>::size_in_bits(inputs_count * digest_size);
     const size_t proof_size_in_bits = r1cs_ppzksnark_proof_variable<to>::size() * field_logsize;
 
     const size_t block_size = aggregation_arity * (vk_size_in_bits + proof_size_in_bits + verifier_input_size_in_bits);
@@ -258,20 +258,24 @@ void aggregator<from, to>::generate_r1cs_witness(
         std::vector<r1cs_ppzksnark_proof<from>> proof_value
         ){
 
+    cout << "setup 1" << endl;
     generate_primary_inputs(
             verification_key_value,
             verifier_input_values,
             proof_value
             );
+    cout << "setup 2" << endl;
 
     /**
      * @brief Generate witnesses for the CRH
      */
     hash_incoming_proof->generate_r1cs_witness();
+    cout << "setup 3" << endl;
     for(size_t k=0; k<aggregation_arity; k++)
     {
         verifiers[k].generate_r1cs_witness();
     }
+    cout << "setup 4" << endl;
 
     // TODO: check why circuit is not well valued
     // assert(pb.is_satisfied());
@@ -296,24 +300,31 @@ void aggregator<from, to>::generate_primary_inputs(
     {
         for(const from_field &val: verifier_input_values[k])
         {
+            cout << "witness 1" << endl;
             v = libff::convert_field_element_to_bit_vector<from_field>(val, elt_size);
             input_as_bits_values.insert(input_as_bits_values.end(), v.begin(), v.end());
         }
+        cout << verifier_inputs_bits[k].size() << endl;
+        cout << input_as_bits_values.size() << endl;
         verifier_inputs_bits[k].fill_with_bits(pb, input_as_bits_values);
         assert(verifier_inputs_bits[k].size() == input_as_bits_values.size());
 
         v.clear();
         input_as_bits_values.clear();
     }
+    cout << "witness 2" << endl;
 
     /**
      * @brief Assign the proof and verification keys
      */
     for(size_t k=0; k<aggregation_arity; k++)
     {
+        cout << "witness 2.1" << endl;
         proofs[k].generate_r1cs_witness(proof_value[k]);
+        cout << "witness 2.2" << endl;
         verification_keys[k].generate_r1cs_witness(verification_key_value[k]);
     }
+    cout << "witness 3" << endl;
 
     /**
      * @brief Maps proof content with proof, and proof_bits with proof content
@@ -336,11 +347,13 @@ void aggregator<from, to>::generate_primary_inputs(
         }
         unpack_proofs[k].generate_r1cs_witness_from_packed();
     }
+    cout << "witness 4" << endl;
 
     /**
      * @brief Generate witnesses for the CRH
      */
     hash_incoming_proof->generate_r1cs_witness();
+    cout << "witness 5" << endl;
     // for(size_t k=0; k<aggregation_arity; k++)
     // {
     //     verifiers[k].generate_r1cs_witness();
