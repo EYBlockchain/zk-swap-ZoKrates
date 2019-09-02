@@ -260,17 +260,12 @@ bool batch(
   }
 
   aggregator<ppT_F, ppT> agg(2, inputs[0].size());
-  cout << "init" << endl;
   agg.generate_r1cs_constraints();
-  cout << "r1cs" << endl;
   r1cs_ppzksnark_keypair<ppT> keypair = r1cs_ppzksnark_generator<ppT>(agg.pb.get_constraint_system());
-  cout << "setup" << endl;
   agg.generate_r1cs_witness(vks, inputs, proofs);
-  cout << "witness" << endl;
   auto primary_input = agg.pb.primary_input();
   auto auxiliary_input = agg.pb.auxiliary_input();
   r1cs_ppzksnark_proof<ppT> proof = r1cs_ppzksnark_prover<ppT>(keypair.pk, primary_input, auxiliary_input);
-  cout << "prove" << endl;
 
   serializeVerificationKeyToFile<N, ppT, G1T, G2T>(keypair.vk, agg_vk_path);
   // serialize vk in raw format (easy verify)

@@ -7,7 +7,7 @@ build() {
 }
 
 unbuild() {
-    (cd .. && cargo clean)
+    (cd .. && find target -name "zokrates_core*" | xargs rm -rf)
 }
 
 clean() {

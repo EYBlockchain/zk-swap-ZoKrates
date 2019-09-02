@@ -41,6 +41,57 @@ pub fn prepare_setup<T: Field>(
     let num_constraints = a.len();
     let num_variables = variables.len();
 
+    println!("\nA");
+    for v in a.iter() {
+        for i in 0..num_variables {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}\t", vv.1);
+                }
+            }
+            if !f {
+                print!("{}\t", 0);
+            }
+        }
+        println!()
+    }
+
+    println!("\nB");
+    for v in b.iter() {
+        for i in 0..num_variables {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}\t", vv.1);
+                }
+            }
+            if !f {
+                print!("{}\t", 0);
+            }
+        }
+        println!()
+    }
+
+    println!("\nC");
+    for v in c.iter() {
+        for i in 0..num_variables {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}\t", vv.1);
+                }
+            }
+            if !f {
+                print!("{}\t", 0);
+            }
+        }
+        println!()
+    }
+
     // Create single A,B,C vectors of tuples (constraint_number, variable_id, variable_value)
     let mut a_vec = vec![];
     let mut b_vec = vec![];
