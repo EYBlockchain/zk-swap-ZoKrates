@@ -36,61 +36,12 @@ pub fn prepare_setup<T: Field>(
     // transform to R1CS
     let (variables, public_variables_count, a, b, c) = r1cs_program(program);
 
-    let num_inputs = public_variables_count - 1;
+    let num_inputs = public_variables_count - 2;
 
     let num_constraints = a.len();
     let num_variables = variables.len();
 
-    println!("\nA");
-    for v in a.iter() {
-        for i in 0..num_variables {
-            let mut f = false;
-            for vv in v.iter() {
-                if vv.0 == i {
-                    f = true;
-                    print!("{}\t", vv.1);
-                }
-            }
-            if !f {
-                print!("{}\t", 0);
-            }
-        }
-        println!()
-    }
-
-    println!("\nB");
-    for v in b.iter() {
-        for i in 0..num_variables {
-            let mut f = false;
-            for vv in v.iter() {
-                if vv.0 == i {
-                    f = true;
-                    print!("{}\t", vv.1);
-                }
-            }
-            if !f {
-                print!("{}\t", 0);
-            }
-        }
-        println!()
-    }
-
-    println!("\nC");
-    for v in c.iter() {
-        for i in 0..num_variables {
-            let mut f = false;
-            for vv in v.iter() {
-                if vv.0 == i {
-                    f = true;
-                    print!("{}\t", vv.1);
-                }
-            }
-            if !f {
-                print!("{}\t", 0);
-            }
-        }
-        println!()
-    }
+    // trace_r1cs(num_variables, &a, &b, &c);
 
     // Create single A,B,C vectors of tuples (constraint_number, variable_id, variable_value)
     let mut a_vec = vec![];
@@ -98,23 +49,35 @@ pub fn prepare_setup<T: Field>(
     let mut c_vec = vec![];
     for row in 0..num_constraints {
         for &(idx, ref val) in &a[row] {
+            let mut vid = idx;
+            if vid == num_inputs + 1 {
+                vid = 0
+            }
             a_vec.push((
                 row as i32,
-                idx as i32,
+                vid as i32,
                 vec_as_u8_32_array(&val.into_byte_vector()),
             ));
         }
         for &(idx, ref val) in &b[row] {
+            let mut vid = idx;
+            if vid == num_inputs + 1 {
+                vid = 0
+            }
             b_vec.push((
                 row as i32,
-                idx as i32,
+                vid as i32,
                 vec_as_u8_32_array(&val.into_byte_vector()),
             ));
         }
         for &(idx, ref val) in &c[row] {
+            let mut vid = idx;
+            if vid == num_inputs + 1 {
+                vid = 0
+            }
             c_vec.push((
                 row as i32,
-                idx as i32,
+                vid as i32,
                 vec_as_u8_32_array(&val.into_byte_vector()),
             ));
         }
@@ -216,7 +179,7 @@ pub fn prepare_generate_proof<T: Field>(
 
     // split witness into public and private inputs at offset
     let mut public_inputs: Vec<_> = witness.clone();
-    let private_inputs: Vec<_> = public_inputs.split_off(public_variables_count);
+    let private_inputs: Vec<_> = public_inputs.split_off(public_variables_count - 1);
 
     let public_inputs_length = public_inputs.len();
     let private_inputs_length = private_inputs.len();
@@ -354,4 +317,60 @@ pub fn r1cs_program<T: Field>(
         std::mem::replace(&mut variables_list[v], k);
     }
     (variables_list, private_inputs_offset, a, b, c)
+}
+
+fn trace_r1cs<T: Field>(vars: usize, a: &Vec<Vec<(usize, T)>>, b: &Vec<Vec<(usize, T)>>, c: &Vec<Vec<(usize, T)>>) {
+    println!("\nA");
+    for v in a.iter() {
+        for i in 0..vars {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}", vv.1);
+                }
+            }
+            if !f {
+                print!("{}", 0);
+            }
+            print!("\t");
+        }
+        println!();
+    }
+
+    println!("\nB");
+    for v in b.iter() {
+        for i in 0..vars {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}", vv.1);
+                }
+            }
+            if !f {
+                print!("{}", 0);
+            }
+            print!("\t");
+        }
+        println!();
+    }
+
+    println!("\nC");
+    for v in c.iter() {
+        for i in 0..vars {
+            let mut f = false;
+            for vv in v.iter() {
+                if vv.0 == i {
+                    f = true;
+                    print!("{}", vv.1);
+                }
+            }
+            if !f {
+                print!("{}", 0);
+            }
+            print!("\t");
+        }
+        println!();
+    }
 }

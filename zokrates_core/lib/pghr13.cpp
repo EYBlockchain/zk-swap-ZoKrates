@@ -241,7 +241,7 @@ bool batch(
     inputs.emplace_back(input);
   }
   {
-    string raw_input_path = string(proof_1_path).append(".input.raw");
+    string raw_input_path = string(proof_2_path).append(".input.raw");
     auto input = loadVectorFromFile<libff::Fr<ppT_F>>(raw_input_path);
     inputs.emplace_back(input);
   }
@@ -259,7 +259,7 @@ bool batch(
     proofs.emplace_back(proof);
   }
 
-  aggregator<ppT_F, ppT> agg(2, inputs[0].size());
+  aggregator<ppT_F, ppT> agg(2);
   agg.generate_r1cs_constraints();
   r1cs_ppzksnark_keypair<ppT> keypair = r1cs_ppzksnark_generator<ppT>(agg.pb.get_constraint_system());
   agg.generate_r1cs_witness(vks, inputs, proofs);

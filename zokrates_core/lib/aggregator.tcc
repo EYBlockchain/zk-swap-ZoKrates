@@ -20,7 +20,6 @@ class aggregator {
         protoboard<to_field> pb;
 
         size_t aggregation_arity;
-        size_t inputs_count;
 
         pb_variable_array<to_field> aggregator_input_var;
 
@@ -41,7 +40,7 @@ class aggregator {
         pb_variable<to_field> verification_result;
         std::vector<r1cs_ppzksnark_verifier_gadget<to>> verifiers;
 
-        aggregator(size_t aggregation_arity, size_t inputs_count);
+        aggregator(size_t aggregation_arity);
         void generate_r1cs_constraints();
         void generate_r1cs_witness(
                 std::vector<r1cs_ppzksnark_verification_key<from>> verification_key_value,
@@ -54,9 +53,8 @@ class aggregator {
 };
 
 template<typename from, typename to>
-aggregator<from, to>::aggregator(size_t aggregation_arity, size_t inputs_count):
-    aggregation_arity(aggregation_arity),
-    inputs_count(inputs_count)
+aggregator<from, to>::aggregator(size_t aggregation_arity):
+    aggregation_arity(aggregation_arity)
 {
 
     /**
@@ -66,9 +64,9 @@ aggregator<from, to>::aggregator(size_t aggregation_arity, size_t inputs_count):
     const size_t elt_size = from_field::size_in_bits();
 
     const size_t digest_size = CRH_with_field_out_gadget<to_field>::get_digest_len();
-    const size_t verifier_input_size_in_bits = digest_size * inputs_count * elt_size;
+    const size_t verifier_input_size_in_bits = digest_size * elt_size;
 
-    const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<to>::size_in_bits(inputs_count * digest_size);
+    const size_t vk_size_in_bits = r1cs_ppzksnark_verification_key_variable<to>::size_in_bits(digest_size);
     const size_t proof_size_in_bits = r1cs_ppzksnark_proof_variable<to>::size() * field_logsize;
 
     const size_t block_size = aggregation_arity * (vk_size_in_bits + proof_size_in_bits + verifier_input_size_in_bits);
@@ -114,7 +112,7 @@ aggregator<from, to>::aggregator(size_t aggregation_arity, size_t inputs_count):
         verification_keys_bits[i].allocate(pb, vk_size_in_bits, "Verification key in bits");
         verification_keys.emplace_back(r1cs_ppzksnark_verification_key_variable<to>(pb,
                     verification_keys_bits[i],
-                    inputs_count * digest_size,
+                    digest_size,
                     "Verification key variable"
                     ));
     }
