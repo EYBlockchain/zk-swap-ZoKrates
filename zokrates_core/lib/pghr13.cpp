@@ -241,7 +241,7 @@ bool batch(
     inputs.emplace_back(input);
   }
   {
-    string raw_input_path = string(proof_1_path).append(".input.raw");
+    string raw_input_path = string(proof_2_path).append(".input.raw");
     auto input = loadVectorFromFile<libff::Fr<ppT_F>>(raw_input_path);
     inputs.emplace_back(input);
   }
