@@ -104,7 +104,7 @@ bool _pghr13_mnt6_mnt4_batch(
     const char *agg_vk_path, const char *agg_proof_path
     );
 
-bool _pghr13_mnt4_setup(const uint8_t* A,
+bool _pghr13_bls12_377_setup(const uint8_t* A,
             const uint8_t* B,
             const uint8_t* C,
             int A_len,
@@ -117,7 +117,7 @@ bool _pghr13_mnt4_setup(const uint8_t* A,
             const char* vk_path
           );
 
-bool _pghr13_mnt4_generate_proof(const char* pk_path,
+bool _pghr13_bls12_377_generate_proof(const char* pk_path,
             const char* proof_path,
             const uint8_t* public_inputs,
             int public_inputs_length,
@@ -125,7 +125,7 @@ bool _pghr13_mnt4_generate_proof(const char* pk_path,
             int private_inputs_length
           );
 
-bool _pghr13_mnt4_verify_proof(
+bool _pghr13_bls12_377_verify_proof(
         const char* vk_path,
         const char* proof_path
         );
