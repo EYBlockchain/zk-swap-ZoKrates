@@ -15,6 +15,8 @@
 #include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
+#include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
+
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
 
@@ -379,4 +381,28 @@ bool _pghr13_mnt6_mnt4_batch(
   libff::mnt6_pp::init_public_params();
   libff::mnt4_pp::init_public_params();
   return pghr13::batch<libff::mnt6_pp, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
+}
+
+bool _pghr13_bls12_377_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::setup<libff::bls12_377_r_limbs, libff::bls12_377_pp, libff::bls12_377_G1, libff::bls12_377_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _pghr13_bls12_377_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::generate_proof<libff::bls12_377_r_limbs, libff::bls12_377_pp, libff::bls12_377_G1, libff::bls12_377_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _pghr13_bls12_377_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::verify_proof<libff::bls12_377_pp>(vk_path, proof_path);
 }
