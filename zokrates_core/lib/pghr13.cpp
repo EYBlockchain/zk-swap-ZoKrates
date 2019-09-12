@@ -15,6 +15,8 @@
 #include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
+#include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
+
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
 
@@ -30,7 +32,7 @@ using namespace libsnark;
 namespace pghr13 {
 
 //takes input and puts it into constraint system
-template<mp_size_t N, typename ppT>
+template<mp_size_t R, typename ppT>
 r1cs_ppzksnark_constraint_system<ppT> createConstraintSystem(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs)
 {
   r1cs_ppzksnark_constraint_system<ppT> cs;
@@ -44,7 +46,7 @@ r1cs_ppzksnark_constraint_system<ppT> createConstraintSystem(const uint8_t* A, c
   struct VariableValueMapping {
     int constraint_id;
     int variable_id;
-    uint8_t variable_value[N*mp_limb_t_size];
+    uint8_t variable_value[R*mp_limb_t_size];
   };
   const VariableValueMapping* A_vvmap = (VariableValueMapping*) A;
   const VariableValueMapping* B_vvmap = (VariableValueMapping*) B;
@@ -58,19 +60,19 @@ r1cs_ppzksnark_constraint_system<ppT> createConstraintSystem(const uint8_t* A, c
     linear_combination<libff::Fr<ppT> > lin_comb_A, lin_comb_B, lin_comb_C;
 
     while (A_id < A_len && A_vvmap[A_id].constraint_id == row) {
-      libff::bigint<N> value = libsnarkBigintFromBytes<N>(A_vvmap[A_id].variable_value);
+      libff::bigint<R> value = libsnarkBigintFromBytes<R>(A_vvmap[A_id].variable_value);
       if (!value.is_zero())
         lin_comb_A.add_term(A_vvmap[A_id].variable_id, value);
       A_id++;
     }
     while (B_id < B_len && B_vvmap[B_id].constraint_id == row) {
-      libff::bigint<N> value = libsnarkBigintFromBytes<N>(B_vvmap[B_id].variable_value);
+      libff::bigint<R> value = libsnarkBigintFromBytes<R>(B_vvmap[B_id].variable_value);
       if (!value.is_zero())
         lin_comb_B.add_term(B_vvmap[B_id].variable_id, value);
       B_id++;
     }
     while (C_id < C_len && C_vvmap[C_id].constraint_id == row) {
-      libff::bigint<N> value = libsnarkBigintFromBytes<N>(C_vvmap[C_id].variable_value);
+      libff::bigint<R> value = libsnarkBigintFromBytes<R>(C_vvmap[C_id].variable_value);
       if (!value.is_zero())
         lin_comb_C.add_term(C_vvmap[C_id].variable_id, value);
       C_id++;
@@ -92,24 +94,24 @@ r1cs_ppzksnark_proving_key<ppT> deserializeProvingKeyFromFile(const char* pk_pat
   return loadFromFile<r1cs_ppzksnark_proving_key<ppT>>(pk_path);
 }
 
-template<mp_size_t N, typename ppT, typename G1T, typename G2T>
+template<mp_size_t Q, typename ppT, typename G1T, typename G2T>
 void serializeVerificationKeyToFile(r1cs_ppzksnark_verification_key<ppT> vk, const char* vk_path) {
   std::stringstream ss;
 
   unsigned icLength = vk.encoded_IC_query.rest.indices.size() + 1;
 
-  ss << "\t\tvk.A = " << outputPointG2AffineAsHex<N, G2T>(vk.alphaA_g2) << endl;
-  ss << "\t\tvk.B = " << outputPointG1AffineAsHex<N, G1T>(vk.alphaB_g1) << endl;
-  ss << "\t\tvk.C = " << outputPointG2AffineAsHex<N, G2T>(vk.alphaC_g2) << endl;
-  ss << "\t\tvk.gamma = " << outputPointG2AffineAsHex<N, G2T>(vk.gamma_g2) << endl;
-  ss << "\t\tvk.gammaBeta1 = " << outputPointG1AffineAsHex<N, G1T>(vk.gamma_beta_g1) << endl;
-  ss << "\t\tvk.gammaBeta2 = " << outputPointG2AffineAsHex<N, G2T>(vk.gamma_beta_g2) << endl;
-  ss << "\t\tvk.Z = " << outputPointG2AffineAsHex<N, G2T>(vk.rC_Z_g2) << endl;
+  ss << "\t\tvk.A = " << outputPointG2AffineAsHex<Q, G2T>(vk.alphaA_g2) << endl;
+  ss << "\t\tvk.B = " << outputPointG1AffineAsHex<Q, G1T>(vk.alphaB_g1) << endl;
+  ss << "\t\tvk.C = " << outputPointG2AffineAsHex<Q, G2T>(vk.alphaC_g2) << endl;
+  ss << "\t\tvk.gamma = " << outputPointG2AffineAsHex<Q, G2T>(vk.gamma_g2) << endl;
+  ss << "\t\tvk.gammaBeta1 = " << outputPointG1AffineAsHex<Q, G1T>(vk.gamma_beta_g1) << endl;
+  ss << "\t\tvk.gammaBeta2 = " << outputPointG2AffineAsHex<Q, G2T>(vk.gamma_beta_g2) << endl;
+  ss << "\t\tvk.Z = " << outputPointG2AffineAsHex<Q, G2T>(vk.rC_Z_g2) << endl;
   ss << "\t\tvk.IC.len() = " << icLength << endl;
-  ss << "\t\tvk.IC[0] = " << outputPointG1AffineAsHex<N, G1T>(vk.encoded_IC_query.first) << endl;
+  ss << "\t\tvk.IC[0] = " << outputPointG1AffineAsHex<Q, G1T>(vk.encoded_IC_query.first) << endl;
   for (size_t i = 1; i < icLength; ++i)
   {
-                  auto vkICi = outputPointG1AffineAsHex<N, G1T>(vk.encoded_IC_query.rest.values[i - 1]);
+                  auto vkICi = outputPointG1AffineAsHex<Q, G1T>(vk.encoded_IC_query.rest.values[i - 1]);
                   ss << "\t\tvk.IC[" << i << "] = " << vkICi << endl;
   }
 
@@ -121,23 +123,23 @@ void serializeVerificationKeyToFile(r1cs_ppzksnark_verification_key<ppT> vk, con
   fh.close();
 }
 
-template<mp_size_t N, typename ppT, typename G1T, typename G2T>
+template<mp_size_t Q, mp_size_t R, typename ppT, typename G1T, typename G2T>
 void exportProof(r1cs_ppzksnark_proof<ppT> proof, const char* proof_path, const r1cs_primary_input<libff::Fr<ppT>> input) {
   //create JSON file
   std::stringstream ss;
   ss << "{" << "\n";
   ss << "\t\"proof\":" << "\n";
   ss << "\t{" << "\n";
-  ss << "\t\t\"A\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_A.g) << ",\n";
-  ss << "\t\t\"A_p\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_A.h) << ",\n";
+  ss << "\t\t\"A\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_A.g) << ",\n";
+  ss << "\t\t\"A_p\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_A.h) << ",\n";
   ss << "\t\t\"B\":" << "\n";
-  ss << "\t\t\t" << outputPointG2AffineAsHexJson<N, G2T>(proof.g_B.g) << ",\n";
+  ss << "\t\t\t" << outputPointG2AffineAsHexJson<Q, G2T>(proof.g_B.g) << ",\n";
   ss << "\t\t\n";
-  ss << "\t\t\"B_p\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_B.h) << ",\n";
-  ss << "\t\t\"C\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_C.g) << ",\n";
-  ss << "\t\t\"C_p\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_C.h) << ",\n";
-  ss << "\t\t\"H\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_H) << ",\n";
-  ss << "\t\t\"K\":" <<outputPointG1AffineAsHexJson<N, G1T>(proof.g_K) << "\n";
+  ss << "\t\t\"B_p\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_B.h) << ",\n";
+  ss << "\t\t\"C\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_C.g) << ",\n";
+  ss << "\t\t\"C_p\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_C.h) << ",\n";
+  ss << "\t\t\"H\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_H) << ",\n";
+  ss << "\t\t\"K\":" <<outputPointG1AffineAsHexJson<Q, G1T>(proof.g_K) << "\n";
   ss << "\t}," << "\n";
   //add input to json
   ss << "\t\"input\":" << "[";
@@ -145,7 +147,7 @@ void exportProof(r1cs_ppzksnark_proof<ppT> proof, const char* proof_path, const 
     if(i!=0){
       ss << ",";
     }
-    ss << outputInputAsHex<N>(input[i].as_bigint());
+    ss << outputInputAsHex<R>(input[i].as_bigint());
   }
   ss << "]" << "\n";
   ss << "}" << "\n";
@@ -154,10 +156,10 @@ void exportProof(r1cs_ppzksnark_proof<ppT> proof, const char* proof_path, const 
   writeToFile(proof_path, s);
 }
 
-template<mp_size_t N, typename ppT, typename G1T, typename G2T>
+template<mp_size_t Q, mp_size_t R, typename ppT, typename G1T, typename G2T>
 bool setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
 {
-  auto cs = createConstraintSystem<N, ppT>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs);
+  auto cs = createConstraintSystem<R, ppT>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs);
   assert(cs.num_variables() >= (unsigned)inputs);
   assert(cs.num_inputs() == (unsigned)inputs);
   assert(cs.num_constraints() == (unsigned)constraints);
@@ -165,7 +167,7 @@ bool setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int 
 
   serializeProvingKeyToFile<ppT>(keypair.pk, pk_path);
 
-  serializeVerificationKeyToFile<N, ppT, G1T, G2T>(keypair.vk, vk_path);
+  serializeVerificationKeyToFile<Q, ppT, G1T, G2T>(keypair.vk, vk_path);
   // serialize vk in raw format (easy verify)
   string raw_vk_path = string(vk_path).append(".raw");
   writeToFile(raw_vk_path, keypair.vk);
@@ -173,22 +175,22 @@ bool setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int 
   return true;
 }
 
-template<mp_size_t N, typename ppT, typename G1T, typename G2T>
+template<mp_size_t Q, mp_size_t R, typename ppT, typename G1T, typename G2T>
 bool generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
 {
   auto pk = deserializeProvingKeyFromFile<ppT>(pk_path);
   r1cs_variable_assignment<libff::Fr<ppT> > full_variable_assignment;
   for (int i = 1; i < public_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<N>(public_inputs + i*N*mp_limb_t_size)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<R>(public_inputs + i*R*mp_limb_t_size)));
   }
   for (int i = 0; i < private_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<N>(private_inputs + i*N*mp_limb_t_size)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<R>(private_inputs + i*R*mp_limb_t_size)));
   }
   r1cs_primary_input<libff::Fr<ppT>> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + public_inputs_length-1);
   r1cs_auxiliary_input<libff::Fr<ppT>> auxiliary_input(full_variable_assignment.begin() + public_inputs_length-1, full_variable_assignment.end());
   auto proof = r1cs_ppzksnark_prover<ppT>(pk, primary_input, auxiliary_input);
 
-  exportProof<N, ppT, G1T, G2T>(proof, proof_path, primary_input);
+  exportProof<Q, R, ppT, G1T, G2T>(proof, proof_path, primary_input);
   // serialize proof in raw format (easy verify)
   string raw_proof_path = string(proof_path).append(".raw");
   writeToFile(raw_proof_path, proof);
@@ -214,7 +216,7 @@ bool verify_proof(const char* vk_path, const char* proof_path)
   return r1cs_ppzksnark_verifier_strong_IC<ppT>(vk, input, proof);
 }
 
-template<typename ppT_F, mp_size_t N, typename ppT, typename G1T, typename G2T>
+template<typename ppT_F, mp_size_t Q, mp_size_t R, typename ppT, typename G1T, typename G2T>
 bool batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
@@ -267,12 +269,12 @@ bool batch(
   auto auxiliary_input = agg.pb.auxiliary_input();
   r1cs_ppzksnark_proof<ppT> proof = r1cs_ppzksnark_prover<ppT>(keypair.pk, primary_input, auxiliary_input);
 
-  serializeVerificationKeyToFile<N, ppT, G1T, G2T>(keypair.vk, agg_vk_path);
+  serializeVerificationKeyToFile<Q, ppT, G1T, G2T>(keypair.vk, agg_vk_path);
   // serialize vk in raw format (easy verify)
   string raw_agg_vk_path = string(agg_vk_path).append(".raw");
   writeToFile(raw_agg_vk_path, keypair.vk);
 
-  exportProof<N, ppT, G1T, G2T>(proof, agg_proof_path, primary_input);
+  exportProof<Q, R, ppT, G1T, G2T>(proof, agg_proof_path, primary_input);
   // serialize proof in raw format (easy verify)
   string raw_agg_proof_path = string(agg_proof_path).append(".raw");
   writeToFile(raw_agg_proof_path, proof);
@@ -290,7 +292,7 @@ bool _pghr13_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_l
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::alt_bn128_pp::init_public_params();
-  return pghr13::setup<libff::alt_bn128_r_limbs, libff::alt_bn128_pp, libff::alt_bn128_G1, libff::alt_bn128_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+  return pghr13::setup<libff::alt_bn128_q_limbs, libff::alt_bn128_r_limbs, libff::alt_bn128_pp, libff::alt_bn128_G1, libff::alt_bn128_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
 }
 
 bool _pghr13_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
@@ -298,7 +300,7 @@ bool _pghr13_generate_proof(const char* pk_path, const char* proof_path, const u
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::alt_bn128_pp::init_public_params();
-  return pghr13::generate_proof<libff::alt_bn128_r_limbs, libff::alt_bn128_pp, libff::alt_bn128_G1, libff::alt_bn128_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+  return pghr13::generate_proof<libff::alt_bn128_q_limbs, libff::alt_bn128_r_limbs, libff::alt_bn128_pp, libff::alt_bn128_G1, libff::alt_bn128_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
 }
 
 bool _pghr13_verify_proof(const char* vk_path, const char* proof_path)
@@ -314,7 +316,7 @@ bool _pghr13_mnt4_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, in
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt4_pp::init_public_params();
-  return pghr13::setup<libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+  return pghr13::setup<libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
 }
 
 bool _pghr13_mnt4_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
@@ -322,7 +324,7 @@ bool _pghr13_mnt4_generate_proof(const char* pk_path, const char* proof_path, co
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt4_pp::init_public_params();
-  return pghr13::generate_proof<libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+  return pghr13::generate_proof<libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
 }
 
 bool _pghr13_mnt4_verify_proof(const char* vk_path, const char* proof_path)
@@ -338,7 +340,7 @@ bool _pghr13_mnt6_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, in
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt6_pp::init_public_params();
-  return pghr13::setup<libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+  return pghr13::setup<libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
 }
 
 bool _pghr13_mnt6_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
@@ -346,7 +348,7 @@ bool _pghr13_mnt6_generate_proof(const char* pk_path, const char* proof_path, co
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt6_pp::init_public_params();
-  return pghr13::generate_proof<libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+  return pghr13::generate_proof<libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
 }
 
 bool _pghr13_mnt6_verify_proof(const char* vk_path, const char* proof_path)
@@ -366,7 +368,7 @@ bool _pghr13_mnt4_mnt6_batch(
   libff::inhibit_profiling_counters = true;
   libff::mnt4_pp::init_public_params();
   libff::mnt6_pp::init_public_params();
-  return pghr13::batch<libff::mnt4_pp, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
+  return pghr13::batch<libff::mnt4_pp, libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
 }
 
 bool _pghr13_mnt6_mnt4_batch(
@@ -378,5 +380,29 @@ bool _pghr13_mnt6_mnt4_batch(
   libff::inhibit_profiling_counters = true;
   libff::mnt6_pp::init_public_params();
   libff::mnt4_pp::init_public_params();
-  return pghr13::batch<libff::mnt6_pp, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
+  return pghr13::batch<libff::mnt6_pp, libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
+}
+
+bool _pghr13_bls12_377_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::setup<libff::bls12_377_q_limbs, libff::bls12_377_r_limbs, libff::bls12_377_pp, libff::bls12_377_G1, libff::bls12_377_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _pghr13_bls12_377_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::generate_proof<libff::bls12_377_q_limbs, libff::bls12_377_r_limbs, libff::bls12_377_pp, libff::bls12_377_G1, libff::bls12_377_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _pghr13_bls12_377_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::bls12_377_pp::init_public_params();
+  return pghr13::verify_proof<libff::bls12_377_pp>(vk_path, proof_path);
 }
