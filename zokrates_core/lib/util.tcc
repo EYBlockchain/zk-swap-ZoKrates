@@ -18,121 +18,121 @@ using namespace std;
 // TODO check it (should crash when not verified)
 const mp_size_t mp_limb_t_size = 8;
 
-template<mp_size_t n>
-libff::bigint<n> libsnarkBigintFromBytes(const uint8_t* _x)
+template<mp_size_t N>
+libff::bigint<N> libsnarkBigintFromBytes(const uint8_t* _x)
 {
-  libff::bigint<n> x;
+  libff::bigint<N> x;
 
-  for (unsigned i = 0; i < n; i++) {
+  for (unsigned i = 0; i < N; i++) {
     for (unsigned j = 0; j < 8; j++) {
-      x.data[n - 1 - i] |= uint64_t(_x[i * 8 + j]) << (8 * (7-j));
+      x.data[N - 1 - i] |= uint64_t(_x[i * 8 + j]) << (8 * (7-j));
     }
   }
 
   return x;
 }
 
-template<mp_size_t n>
-std::string HexStringFromLibsnarkBigint(libff::bigint<n> _x) {
-  uint8_t x[mp_limb_t_size * n];
-  for (unsigned i = 0; i < n; i++)
+template<mp_size_t N>
+std::string HexStringFromLibsnarkBigint(libff::bigint<N> _x) {
+  uint8_t x[mp_limb_t_size * N];
+  for (unsigned i = 0; i < N; i++)
     for (unsigned j = 0; j < 8; j++)
-      x[i * 8 + j] = uint8_t(uint64_t(_x.data[n - 1 - i]) >> (8 * (7 - j)));
+      x[i * 8 + j] = uint8_t(uint64_t(_x.data[N - 1 - i]) >> (8 * (7 - j)));
 
   std::stringstream ss;
   ss << std::setfill('0');
-  for (unsigned i = 0; i<mp_limb_t_size * n; i++) {
+  for (unsigned i = 0; i<mp_limb_t_size * N; i++) {
     ss << std::hex << std::setw(2) << (int)x[i];
   }
   return ss.str();
 }
 
-template<mp_size_t n>
-std::string outputInputAsHex(libff::bigint<n> _x){
-  return "\"0x" + HexStringFromLibsnarkBigint<n>(_x) + "\"";
+template<mp_size_t N>
+std::string outputInputAsHex(libff::bigint<N> _x){
+  return "\"0x" + HexStringFromLibsnarkBigint<N>(_x) + "\"";
 }
 
-template<mp_size_t n, typename G1T>
+template<mp_size_t Q, typename G1T>
 std::string outputPointG1AffineAsHex(G1T _p)
 {
   G1T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (!std::is_same<G1T, libff::alt_bn128_G1>::value) {
+  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value) {
     return
       "0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().as_bigint()) +
+      HexStringFromLibsnarkBigint<Q>(aff.X().as_bigint()) +
       ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().as_bigint());
+      HexStringFromLibsnarkBigint<Q>(aff.Y().as_bigint());
   } else {
     return
       "0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.as_bigint()) +
+      HexStringFromLibsnarkBigint<Q>(aff.X.as_bigint()) +
       ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.as_bigint());
+      HexStringFromLibsnarkBigint<Q>(aff.Y.as_bigint());
   }
 }
 
-template<mp_size_t n, typename G1T>
+template<mp_size_t Q, typename G1T>
 std::string outputPointG1AffineAsHexJson(G1T _p)
 {
   G1T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (!std::is_same<G1T, libff::alt_bn128_G1>::value) {
+  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value) {
     return
       "[\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().as_bigint()) +
+      HexStringFromLibsnarkBigint<Q>(aff.X().as_bigint()) +
       "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().as_bigint())+"\"]";
+      HexStringFromLibsnarkBigint<Q>(aff.Y().as_bigint())+"\"]";
   } else {
     return
       "[\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.as_bigint()) +
+      HexStringFromLibsnarkBigint<Q>(aff.X.as_bigint()) +
       "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.as_bigint())+"\"]";
+      HexStringFromLibsnarkBigint<Q>(aff.Y.as_bigint())+"\"]";
   }
 }
 
-template<mp_size_t n, typename G2T>
+template<mp_size_t Q, typename G2T>
 std::string outputPointG2AffineAsHex(G2T _p)
 {
   G2T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (!std::is_same<G2T, libff::alt_bn128_G2>::value) {
+  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value) {
     return
       "[0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().c1.as_bigint()) + ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().c0.as_bigint()) + "], [0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().c1.as_bigint()) + ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().c0.as_bigint()) + "]";
+      HexStringFromLibsnarkBigint<Q>(aff.X().c1.as_bigint()) + ", 0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.X().c0.as_bigint()) + "], [0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y().c1.as_bigint()) + ", 0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y().c0.as_bigint()) + "]";
   } else {
     return
       "[0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.c1.as_bigint()) + ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.c0.as_bigint()) + "], [0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.c1.as_bigint()) + ", 0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.c0.as_bigint()) + "]";
+      HexStringFromLibsnarkBigint<Q>(aff.X.c1.as_bigint()) + ", 0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.X.c0.as_bigint()) + "], [0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y.c1.as_bigint()) + ", 0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y.c0.as_bigint()) + "]";
   }
 }
 
-template<mp_size_t n, typename G2T>
+template<mp_size_t Q, typename G2T>
 std::string outputPointG2AffineAsHexJson(G2T _p)
 {
   G2T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (!std::is_same<G2T, libff::alt_bn128_G2>::value) {
+  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value) {
     return
       "[[\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().c1.as_bigint()) + "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X().c0.as_bigint()) + "\"], [\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().c1.as_bigint()) + "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y().c0.as_bigint()) + "\"]]";
+      HexStringFromLibsnarkBigint<Q>(aff.X().c1.as_bigint()) + "\", \"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.X().c0.as_bigint()) + "\"], [\"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y().c1.as_bigint()) + "\", \"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y().c0.as_bigint()) + "\"]]";
   } else {
     return
       "[[\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.c1.as_bigint()) + "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.X.c0.as_bigint()) + "\"], [\"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.c1.as_bigint()) + "\", \"0x" +
-      HexStringFromLibsnarkBigint<n>(aff.Y.c0.as_bigint()) + "\"]]";
+      HexStringFromLibsnarkBigint<Q>(aff.X.c1.as_bigint()) + "\", \"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.X.c0.as_bigint()) + "\"], [\"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y.c1.as_bigint()) + "\", \"0x" +
+      HexStringFromLibsnarkBigint<Q>(aff.Y.c0.as_bigint()) + "\"]]";
   }
 }
 
