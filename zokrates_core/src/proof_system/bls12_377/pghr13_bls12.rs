@@ -12,7 +12,7 @@ use std::io::BufReader;
 use zokrates_field::field::FieldPrime;
 
 extern "C" {
-    fn _pghr13_bls12_setup(
+    fn _pghr13_bls12_377_setup(
         A: *const u8,
         B: *const u8,
         C: *const u8,
@@ -26,7 +26,7 @@ extern "C" {
         vk_path: *const c_char,
     ) -> bool;
 
-    fn _pghr13_bls12_generate_proof(
+    fn _pghr13_bls12_377_generate_proof(
         pk_path: *const c_char,
         proof_path: *const c_char,
         public_inputs: *const u8,
@@ -35,21 +35,21 @@ extern "C" {
         private_inputs_length: c_int,
     ) -> bool;
 
-    fn _pghr13_bls12_verify_proof(
+    fn _pghr13_bls12_377_verify_proof(
         vk_path: *const c_char,
         proof_path: *const c_char,
     ) -> bool;
 }
 
-pub struct PGHR13_bls12 {}
+pub struct PGHR13_BLS12 {}
 
-impl PGHR13_bls12 {
-    pub fn new() -> PGHR13_bls12 {
-        PGHR13_bls12 {}
+impl PGHR13_BLS12 {
+    pub fn new() -> PGHR13_BLS12 {
+        PGHR13_BLS12 {}
     }
 }
 
-impl ProofSystem for PGHR13_bls12 {
+impl ProofSystem for PGHR13_BLS12 {
     fn setup(&self, program: ir::Prog<FieldPrime>, pk_path: &str, vk_path: &str) {
         let (
             a_arr,
@@ -66,7 +66,7 @@ impl ProofSystem for PGHR13_bls12 {
         ) = prepare_setup(program, pk_path, vk_path);
 
         unsafe {
-            _pghr13_bls12_setup(
+            _pghr13_bls12_377_setup(
                 a_arr.as_ptr(),
                 b_arr.as_ptr(),
                 c_arr.as_ptr(),
@@ -104,7 +104,7 @@ impl ProofSystem for PGHR13_bls12 {
         );
 
         unsafe {
-            _pghr13_bls12_generate_proof(
+            _pghr13_bls12_377_generate_proof(
                 pk_path_cstring.as_ptr(),
                 proof_path_cstring.as_ptr(),
                 public_inputs_arr[0].as_ptr(),
@@ -123,7 +123,7 @@ impl ProofSystem for PGHR13_bls12 {
         let vk_path_cstring = CString::new(vk_path).unwrap();
         let proof_path_cstring = CString::new(proof_path).unwrap();
         unsafe {
-            _pghr13_bls12_verify_proof(
+            _pghr13_bls12_377_verify_proof(
                 vk_path_cstring.as_ptr(),
                 proof_path_cstring.as_ptr(),
             )
