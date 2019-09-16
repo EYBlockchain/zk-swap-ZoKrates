@@ -13,6 +13,9 @@
 
 // contains definition of alt_bn128 ec public parameters
 #include "libff/algebra/curves/alt_bn128/alt_bn128_pp.hpp"
+#include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
+#include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
+#include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_se_ppzksnark/r1cs_se_ppzksnark.hpp>
 

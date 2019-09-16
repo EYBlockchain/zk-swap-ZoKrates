@@ -17,3 +17,4 @@
 [submodule "deps/libsnark"]
 	path = deps/libsnark
 	url = git@github.com:EYBlockchain/zk-swap-libsnark.git
+        branch = ey
