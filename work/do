@@ -39,7 +39,7 @@ move() {
     [ -z $1 ] && echo "missing args" >&2 && return 1
     mkdir -p "$1"
     cp verification.key* "$1"
-    mv proof.json* "$1"
+    cp proof.json* "$1"
 }
 
 batch() {
