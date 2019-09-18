@@ -149,6 +149,7 @@ impl Importer {
             let pos = import.pos();
             let import = &import.value;
             // handle the case of special bellman and packing imports
+            println!("Hello!, here is the import: {:?}", import);
             if import.source.starts_with("BELLMAN") {
                 match import.source.as_ref() {
                     "BELLMAN/sha256round" => {
@@ -178,6 +179,7 @@ impl Importer {
 
                 match import.source.as_ref() {
                     "PACKING/split" => {
+                        println!("Hello, we're in PACKING/split");
                         let compiled = split();
                         let alias = match import.alias {
                             Some(ref alias) => alias.clone(),

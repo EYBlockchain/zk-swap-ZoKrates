@@ -15,7 +15,7 @@ clean() {
 }
 
 compile() {
-    ../target/debug/zokrates compile -i root.code
+    ../target/debug/zokrates compile -i hash.code
 }
 
 setup() {
