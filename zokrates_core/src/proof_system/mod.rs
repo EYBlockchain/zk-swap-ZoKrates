@@ -1,6 +1,7 @@
 mod bn128;
 mod mnt;
 mod bls12_377;
+mod sw6;
 #[cfg(feature = "libsnark")]
 mod batch;
 
@@ -18,6 +19,8 @@ pub use self::bls12_377::PGHR13_BLS12;
 pub use self::mnt::PGHR13_MNT4;
 #[cfg(feature = "libsnark")]
 pub use self::mnt::PGHR13_MNT6;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::PGHR13_SW6;
 #[cfg(feature = "libsnark")]
 pub use self::batch::*;
 
