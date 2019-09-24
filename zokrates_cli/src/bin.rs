@@ -623,6 +623,7 @@ fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
             "MNT4753" => Ok(&PGHR13_MNT4753 {}),
             "BLS12" => Ok(&PGHR13_BLS12 {}),
             "SW6" => Ok(&PGHR13_SW6 {}),
+            "EDWARDS" => Ok(&PGHR13_EDWARDS {}),
             _ => Ok(&PGHR13 {}),
         },
         #[cfg(feature = "libsnark")]

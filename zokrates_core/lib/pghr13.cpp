@@ -18,6 +18,7 @@
 #include "libff/algebra/curves/mnt753/mnt4753/mnt4753_pp.hpp"
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 #include "libff/algebra/curves/sw6/sw6_pp.hpp"
+#include "libff/algebra/curves/edwards/edwards_pp.hpp"
 
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_ppzksnark/r1cs_ppzksnark.hpp>
@@ -455,4 +456,28 @@ bool _pghr13_mnt4753_verify_proof(const char* vk_path, const char* proof_path)
   libff::inhibit_profiling_counters = true;
   libff::mnt4753_pp::init_public_params();
   return pghr13::verify_proof<libff::mnt4753_pp>(vk_path, proof_path);
+}
+
+bool _pghr13_edwards_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::edwards_pp::init_public_params();
+  return pghr13::setup<libff::edwards_q_limbs, libff::edwards_r_limbs, libff::edwards_pp, libff::edwards_G1, libff::edwards_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _pghr13_edwards_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::edwards_pp::init_public_params();
+  return pghr13::generate_proof<libff::edwards_q_limbs, libff::edwards_r_limbs, libff::edwards_pp, libff::edwards_G1, libff::edwards_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _pghr13_edwards_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::edwards_pp::init_public_params();
+  return pghr13::verify_proof<libff::edwards_pp>(vk_path, proof_path);
 }

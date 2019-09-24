@@ -18,6 +18,7 @@
 #include "libff/algebra/curves/mnt753/mnt4753/mnt4753_pp.hpp"
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 #include "libff/algebra/curves/sw6/sw6_pp.hpp"
+#include "libff/algebra/curves/edwards/edwards_pp.hpp"
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_se_ppzksnark/r1cs_se_ppzksnark.hpp>
 
