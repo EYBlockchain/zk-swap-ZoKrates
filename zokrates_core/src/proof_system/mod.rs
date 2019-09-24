@@ -1,5 +1,6 @@
 mod bn128;
 mod mnt;
+mod mnt753;
 mod bls12_377;
 mod sw6;
 #[cfg(feature = "libsnark")]
@@ -19,6 +20,8 @@ pub use self::bls12_377::PGHR13_BLS12;
 pub use self::mnt::PGHR13_MNT4;
 #[cfg(feature = "libsnark")]
 pub use self::mnt::PGHR13_MNT6;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::PGHR13_MNT4753;
 #[cfg(feature = "libsnark")]
 pub use self::sw6::PGHR13_SW6;
 #[cfg(feature = "libsnark")]
