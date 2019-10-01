@@ -9,6 +9,8 @@ extern "C" {
         proof_1_path: *const c_char,
         vk_2_path: *const c_char,
         proof_2_path: *const c_char,
+        vk_3_path: *const c_char,
+        proof_3_path: *const c_char,
         agg_vk_path: *const c_char,
         agg_proof_path: *const c_char,
     ) -> bool;
@@ -17,6 +19,8 @@ extern "C" {
         proof_1_path: *const c_char,
         vk_2_path: *const c_char,
         proof_2_path: *const c_char,
+        vk_3_path: *const c_char,
+        proof_3_path: *const c_char,
         agg_vk_path: *const c_char,
         agg_proof_path: *const c_char,
     ) -> bool;
@@ -28,6 +32,8 @@ pub fn batch(
     proof_1_path: &str,
     vk_2_path: &str,
     proof_2_path: &str,
+    vk_3_path: &str,
+    proof_3_path: &str,
     agg_vk_path: &str,
     agg_proof_path: &str,
 ) -> bool {
@@ -35,6 +41,8 @@ pub fn batch(
     let proof_1_path_cstring = CString::new(proof_1_path).unwrap();
     let vk_2_path_cstring = CString::new(vk_2_path).unwrap();
     let proof_2_path_cstring = CString::new(proof_2_path).unwrap();
+    let vk_3_path_cstring = CString::new(vk_3_path).unwrap();
+    let proof_3_path_cstring = CString::new(proof_3_path).unwrap();
     let agg_vk_path_cstring = CString::new(agg_vk_path).unwrap();
     let agg_proof_path_cstring = CString::new(agg_proof_path).unwrap();
     match (from_curve, to_curve) {
@@ -44,6 +52,8 @@ pub fn batch(
                 proof_1_path_cstring.as_ptr(),
                 vk_2_path_cstring.as_ptr(),
                 proof_2_path_cstring.as_ptr(),
+                vk_3_path_cstring.as_ptr(),
+                proof_3_path_cstring.as_ptr(),
                 agg_vk_path_cstring.as_ptr(),
                 agg_proof_path_cstring.as_ptr(),
             )
@@ -54,6 +64,8 @@ pub fn batch(
                 proof_1_path_cstring.as_ptr(),
                 vk_2_path_cstring.as_ptr(),
                 proof_2_path_cstring.as_ptr(),
+                vk_3_path_cstring.as_ptr(),
+                proof_3_path_cstring.as_ptr(),   
                 agg_vk_path_cstring.as_ptr(),
                 agg_proof_path_cstring.as_ptr(),
             )

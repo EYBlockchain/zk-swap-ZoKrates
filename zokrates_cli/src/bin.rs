@@ -275,8 +275,8 @@ fn cli() -> Result<(), String> {
         )
     )
     .subcommand(SubCommand::with_name("batch")
-        .about("Aggregate 2 PGHR13 proofs into a single proof on a pairing curve")
-        .arg(Arg::with_name("from_curve")
+        .about("Aggregate 3 PGHR13 proofs into a single proof on a pairing curve")
+        .arg(Arg::with_name(" ")
              .long("from_curve")
              .help("Simple proofs curve")
              .takes_value(true)
@@ -294,6 +294,12 @@ fn cli() -> Result<(), String> {
              .takes_value(true)
              .required(true)
          )
+         .arg(Arg::with_name("from_3")
+              .long("from_3")
+              .help("Third simple proof folder")
+              .takes_value(true)
+              .required(true)
+          )
         .arg(Arg::with_name("to_curve")
              .long("to_curve")
              .help("Aggregated proof curve")
@@ -598,12 +604,15 @@ fn cli() -> Result<(), String> {
             let fc = sub_matches.value_of("from_curve").unwrap();
             let f1 = sub_matches.value_of("from_1").unwrap();
             let f2 = sub_matches.value_of("from_2").unwrap();
+            let f3 = sub_matches.value_of("from_3").unwrap();
             let tc = sub_matches.value_of("to_curve").unwrap();
             let vk1 = format!("{}/{}", f1, VERIFICATION_KEY_DEFAULT_PATH);
             let proof1 = format!("{}/{}", f1, JSON_PROOF_PATH);
             let vk2 = format!("{}/{}", f2, VERIFICATION_KEY_DEFAULT_PATH);
             let proof2 = format!("{}/{}", f2, JSON_PROOF_PATH);
-            let ok = batch(fc, tc, &vk1, &proof1, &vk2, &proof2, VERIFICATION_KEY_DEFAULT_PATH, JSON_PROOF_PATH);
+            let vk3 = format!("{}/{}", f3, VERIFICATION_KEY_DEFAULT_PATH);
+            let proof3 = format!("{}/{}", f3, JSON_PROOF_PATH);
+            let ok = batch(fc, tc, &vk1, &proof1, &vk2, &proof2, &vk3, &proof3, VERIFICATION_KEY_DEFAULT_PATH, JSON_PROOF_PATH);
             println!("batching successful: {:?}", ok);
         }
         _ => unreachable!(),
