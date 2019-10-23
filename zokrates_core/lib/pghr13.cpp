@@ -16,6 +16,7 @@
 #include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
 #include "libff/algebra/curves/mnt753/mnt4753/mnt4753_pp.hpp"
+#include "libff/algebra/curves/mnt753/mnt6753/mnt6753_pp.hpp"
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 #include "libff/algebra/curves/sw6/sw6_pp.hpp"
 #include "libff/algebra/curves/edwards/edwards_pp.hpp"
@@ -474,6 +475,30 @@ bool _pghr13_mnt4753_verify_proof(const char* vk_path, const char* proof_path)
   libff::inhibit_profiling_counters = true;
   libff::mnt4753_pp::init_public_params();
   return pghr13::verify_proof<libff::mnt4753_pp>(vk_path, proof_path);
+}
+
+bool _pghr13_mnt6753_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return pghr13::setup<libff::mnt6753_q_limbs, libff::mnt6753_r_limbs, libff::mnt6753_pp, libff::mnt6753_G1, libff::mnt6753_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _pghr13_mnt6753_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return pghr13::generate_proof<libff::mnt6753_q_limbs, libff::mnt6753_r_limbs, libff::mnt6753_pp, libff::mnt6753_G1, libff::mnt6753_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _pghr13_mnt6753_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return pghr13::verify_proof<libff::mnt6753_pp>(vk_path, proof_path);
 }
 
 bool _pghr13_edwards_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)

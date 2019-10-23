@@ -16,6 +16,7 @@
 #include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
 #include "libff/algebra/curves/mnt753/mnt4753/mnt4753_pp.hpp"
+#include "libff/algebra/curves/mnt753/mnt4753/mnt6753_pp.hpp"
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 #include "libff/algebra/curves/sw6/sw6_pp.hpp"
 #include "libff/algebra/curves/edwards/edwards_pp.hpp"

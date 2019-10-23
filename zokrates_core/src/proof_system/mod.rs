@@ -24,6 +24,8 @@ pub use self::mnt::PGHR13_MNT6;
 #[cfg(feature = "libsnark")]
 pub use self::mnt753::PGHR13_MNT4753;
 #[cfg(feature = "libsnark")]
+pub use self::mnt753::PGHR13_MNT6753;
+#[cfg(feature = "libsnark")]
 pub use self::sw6::PGHR13_SW6;
 #[cfg(feature = "libsnark")]
 pub use self::edwards::PGHR13_EDWARDS;
