@@ -6,11 +6,11 @@ use std::ffi::CString;
 use zokrates_field::field::Field;
 
 // utility function. Converts a Fields vector-based byte representation to fixed size array.
-fn vec_as_u8_32_array(vec: &Vec<u8>) -> [u8; 23] {
-    assert!(vec.len() <= 23);
-    let mut array = [0u8; 23];
+fn vec_as_u8_32_array(vec: &Vec<u8>) -> [u8; 26] {
+    assert!(vec.len() <= 26);
+    let mut array = [0u8; 26];
     for (index, byte) in vec.iter().enumerate() {
-        array[22 - index] = *byte;
+        array[25 - index] = *byte;
     }
     array
 }
@@ -24,9 +24,9 @@ pub fn prepare_setup<T: Field>(
     Vec<u8>,
     Vec<u8>,
     Vec<u8>,
-    Vec<(i32, i32, [u8; 23])>,
-    Vec<(i32, i32, [u8; 23])>,
-    Vec<(i32, i32, [u8; 23])>,
+    Vec<(i32, i32, [u8; 26])>,
+    Vec<(i32, i32, [u8; 26])>,
+    Vec<(i32, i32, [u8; 26])>,
     usize,
     usize,
     usize,
@@ -70,15 +70,15 @@ pub fn prepare_setup<T: Field>(
     }
 
     // Sizes and offsets in bytes for our struct {row, id, value}
-    // We're building { i32, i32, i8[23] }
-    const STRUCT_SIZE: usize = 31;
+    // We're building { i32, i32, i8[26] }
+    const STRUCT_SIZE: usize = 34;
 
     const ROW_SIZE: usize = 4;
 
     const IDX_SIZE: usize = 4;
     const IDX_OFFSET: usize = 4;
 
-    const VALUE_SIZE: usize = 23;
+    const VALUE_SIZE: usize = 26;
     const VALUE_OFFSET: usize = 8;
 
     // Convert above A,B,C vectors to byte arrays for cpp
@@ -154,7 +154,7 @@ pub fn prepare_generate_proof<T: Field>(
     witness: ir::Witness<T>,
     pk_path: &str,
     proof_path: &str,
-) -> (CString, CString, Vec<[u8; 23]>, usize, Vec<[u8; 23]>, usize) {
+) -> (CString, CString, Vec<[u8; 26]>, usize, Vec<[u8; 26]>, usize) {
     let pk_path_cstring = CString::new(pk_path).unwrap();
     let proof_path_cstring = CString::new(proof_path).unwrap();
 
@@ -170,9 +170,9 @@ pub fn prepare_generate_proof<T: Field>(
     let public_inputs_length = public_inputs.len();
     let private_inputs_length = private_inputs.len();
 
-    let mut public_inputs_arr: Vec<[u8; 23]> = vec![[0u8; 23]; public_inputs_length];
+    let mut public_inputs_arr: Vec<[u8; 26]> = vec![[0u8; 26]; public_inputs_length];
     // length must not be zero here, so we apply the max function
-    let mut private_inputs_arr: Vec<[u8; 23]> = vec![[0u8; 23]; max(private_inputs_length, 1)];
+    let mut private_inputs_arr: Vec<[u8; 26]> = vec![[0u8; 26]; max(private_inputs_length, 1)];
 
     //convert inputs
     for (index, value) in public_inputs.into_iter().enumerate() {
