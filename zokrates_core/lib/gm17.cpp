@@ -160,7 +160,7 @@ bool setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int 
   assert(cs.num_variables() >= (unsigned)inputs);
   assert(cs.num_inputs() == (unsigned)inputs);
   assert(cs.num_constraints() == (unsigned)constraints);
-  auto keypair = r1cs_se_ppzksnark_generator<libff::alt_bn128_pp>(cs);
+  auto keypair = r1cs_se_ppzksnark_generator<ppT>(cs);
   gm17::serializeProvingKeyToFile<ppT>(keypair.pk, pk_path);
   gm17::serializeVerificationKeyToFile<Q, ppT, G1T, G2T>(keypair.vk, vk_path);
   // serialize vk in raw format (easy verify)
@@ -182,7 +182,7 @@ bool generate_proof(const char* pk_path, const char* proof_path, const uint8_t* 
   }
   r1cs_primary_input<libff::Fr<ppT>> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + public_inputs_length-1);
   r1cs_primary_input<libff::Fr<ppT>> auxiliary_input(full_variable_assignment.begin() + public_inputs_length-1, full_variable_assignment.end());
-  auto proof = r1cs_se_ppzksnark_prover<libff::alt_bn128_pp>(pk, primary_input, auxiliary_input);
+  auto proof = r1cs_se_ppzksnark_prover<ppT>(pk, primary_input, auxiliary_input);
   gm17::exportProof<Q, R, ppT, G1T, G2T>(proof, proof_path, public_inputs, public_inputs_length);
   // serialize proof in raw format (easy verify)
   string raw_proof_path = string(proof_path).append(".raw");
