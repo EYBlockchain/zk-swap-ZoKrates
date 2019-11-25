@@ -501,6 +501,32 @@ bool _pghr13_mnt6753_verify_proof(const char* vk_path, const char* proof_path)
   return pghr13::verify_proof<libff::mnt6753_pp>(vk_path, proof_path);
 }
 
+bool _pghr13_mnt4753_mnt6753_batch(
+    const char *vk_1_path, const char *proof_1_path,
+    const char *vk_2_path, const char *proof_2_path,
+    const char *vk_3_path, const char *proof_3_path,
+    const char *agg_vk_path, const char *agg_proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4753_pp::init_public_params();
+  libff::mnt6753_pp::init_public_params();
+  return pghr13::batch<libff::mnt4753_pp, libff::mnt6753_q_limbs, libff::mnt6753_r_limbs, libff::mnt6753_pp, libff::mnt6753_G1, libff::mnt6753_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, vk_3_path, proof_3_path, agg_vk_path, agg_proof_path);
+}
+
+bool _pghr13_mnt6753_mnt4753_batch(
+    const char *vk_1_path, const char *proof_1_path,
+    const char *vk_2_path, const char *proof_2_path,
+    const char *vk_3_path, const char *proof_3_path,
+    const char *agg_vk_path, const char *agg_proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  libff::mnt4753_pp::init_public_params();
+  return pghr13::batch<libff::mnt6753_pp, libff::mnt4753_q_limbs, libff::mnt4753_r_limbs, libff::mnt4753_pp, libff::mnt4753_G1, libff::mnt4753_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, vk_3_path, proof_3_path, agg_vk_path, agg_proof_path);
+}
+
 bool _pghr13_edwards_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
 {
   libff::inhibit_profiling_info = true;

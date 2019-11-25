@@ -601,6 +601,7 @@ fn cli() -> Result<(), String> {
         }
         #[cfg(feature = "libsnark")]
         ("batch", Some(sub_matches)) => {
+            let scheme = sub_matches.value_of("proving-scheme").unwrap();
             let fc = sub_matches.value_of("from_curve").unwrap();
             let f1 = sub_matches.value_of("from_1").unwrap();
             let f2 = sub_matches.value_of("from_2").unwrap();
@@ -612,7 +613,7 @@ fn cli() -> Result<(), String> {
             let proof2 = format!("{}/{}", f2, JSON_PROOF_PATH);
             let vk3 = format!("{}/{}", f3, VERIFICATION_KEY_DEFAULT_PATH);
             let proof3 = format!("{}/{}", f3, JSON_PROOF_PATH);
-            let ok = batch(fc, tc, &vk1, &proof1, &vk2, &proof2, &vk3, &proof3, VERIFICATION_KEY_DEFAULT_PATH, JSON_PROOF_PATH);
+            let ok = batch(scheme, fc, tc, &vk1, &proof1, &vk2, &proof2, &vk3, &proof3, VERIFICATION_KEY_DEFAULT_PATH, JSON_PROOF_PATH);
             println!("batching successful: {:?}", ok);
         }
         _ => unreachable!(),
@@ -637,7 +638,19 @@ fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
             _ => Ok(&PGHR13 {}),
         },
         #[cfg(feature = "libsnark")]
-        "gm17" => Ok(&GM17 {}),
+        "gm17" => match env::var("ZOKRATES_CURVE")
+            .unwrap_or(String::from(""))
+            .as_ref()
+        {
+            "MNT4" => Ok(&GM17_MNT4 {}),
+            "MNT6" => Ok(&GM17_MNT6 {}),
+            "MNT4753" => Ok(&GM17_MNT4753 {}),
+            "MNT6753" => Ok(&GM17_MNT6753 {}),
+            // "BLS12" => Ok(&GM17_BLS12 {}),
+            // "SW6" => Ok(&GM17_SW6 {}),
+            // "EDWARDS" => Ok(&GM17_EDWARDS {}),
+            _ => Ok(&GM17 {}),
+        },
         "g16" => Ok(&G16 {}),
         s => Err(format!("Backend \"{}\" not supported", s)),
     }
