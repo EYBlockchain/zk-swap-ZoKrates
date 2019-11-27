@@ -95,14 +95,12 @@ bool _pghr13_mnt6_verify_proof(
 bool _pghr13_mnt4_mnt6_batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
-    const char *vk_3_path, const char *proof_3_path,
     const char *agg_vk_path, const char *agg_proof_path
     );
 
 bool _pghr13_mnt6_mnt4_batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
-    const char *vk_3_path, const char *proof_3_path,
     const char *agg_vk_path, const char *agg_proof_path
     );
 
