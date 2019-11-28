@@ -275,7 +275,7 @@ fn cli() -> Result<(), String> {
         )
     )
     .subcommand(SubCommand::with_name("batch")
-        .about("Aggregate 3 PGHR13 proofs into a single proof on a pairing curve")
+        .about("Aggregate 2 PGHR13 proofs into a single proof on a pairing curve")
         .arg(Arg::with_name("from_curve")
              .long("from_curve")
              .help("Simple proofs curve")

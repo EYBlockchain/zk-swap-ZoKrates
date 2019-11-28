@@ -20,7 +20,7 @@ extern "C" {
         agg_vk_path: *const c_char,
         agg_proof_path: *const c_char,
     ) -> bool;
-    fn _pghr13_mnt4753_mnt6753_batch(
+/*    fn _pghr13_mnt4753_mnt6753_batch(
         vk_1_path: *const c_char,
         proof_1_path: *const c_char,
         vk_2_path: *const c_char,
@@ -35,7 +35,7 @@ extern "C" {
         proof_2_path: *const c_char,
         agg_vk_path: *const c_char,
         agg_proof_path: *const c_char,
-    ) -> bool;
+    ) -> bool;*/
 }
 
 pub fn batch(
@@ -75,7 +75,7 @@ pub fn batch(
                 agg_proof_path_cstring.as_ptr(),
             )
         },
-        ("MNT4753", "MNT6753") => unsafe {
+        /*("MNT4753", "MNT6753") => unsafe {
             _pghr13_mnt4753_mnt6753_batch(
                 vk_1_path_cstring.as_ptr(),
                 proof_1_path_cstring.as_ptr(),
@@ -94,7 +94,7 @@ pub fn batch(
                 agg_vk_path_cstring.as_ptr(),
                 agg_proof_path_cstring.as_ptr(),
             )
-        }, 
+        },*/ 
         _ => panic!("Not supported batch"),
     }
 }

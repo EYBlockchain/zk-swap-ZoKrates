@@ -25,7 +25,7 @@ fn main() {
             .define("USE_PT_COMPRESSION", "OFF")
             .define("MONTGOMERY_OUTPUT", "ON")
             .define("BINARY_OUTPUT", "ON")
-            .define("DEBUG", "ON")
+//            .define("DEBUG", "ON")
             .build();
 
         // build backends
