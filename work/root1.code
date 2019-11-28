@@ -1,4 +1,14 @@
-def main(private field a, field b) -> (field):
-  field result = if a * a == b then 1 else 0 fi
-  return result
+// MAIN
 
+def main( private field A, field B) -> ():
+
+    field C = A
+
+    for field i in 0..800000 do
+        C = (C * i) * (C + i)
+    endfor
+
+    // CHECK THE INPUT B EQUALS THE CALCULATED thing
+    B == C
+
+    return
