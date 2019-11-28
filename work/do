@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-export ZOKRATES_PROVING_SCHEME=PGHR13
+#export ZOKRATES_PROVING_SCHEME=PGHR13
+export ZOKRATES_PROVING_SCHEME=GM17
 
 build() {
     (cd .. && cargo +nightly -Z package-features build --package zokrates_cli --features="libsnark")
@@ -43,8 +44,9 @@ move() {
 }
 
 batch() {
-    [ $# -ne 5 ] && echo "missing args" >&2 && return 1
-    ../target/debug/zokrates batch --from_curve=$1 --to_curve=$2 --from_1=$3 --from_2=$4 --from_3=$5
+    [ $# -ne 4 ] && echo "missing args" >&2 && return 1
+//    ../target/debug/zokrates batch --from_curve=$1 --to_curve=$2 --from_1=$3 --from_2=$4 --from_3=$5
+    ../target/debug/zokrates batch --from_curve=$1 --to_curve=$2 --from_1=$3 --from_2=$4 
 }
 
 err() {

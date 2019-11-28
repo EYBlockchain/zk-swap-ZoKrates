@@ -20,10 +20,13 @@
 #include "libff/algebra/curves/bls12_377/bls12_377_pp.hpp"
 #include "libff/algebra/curves/sw6/sw6_pp.hpp"
 #include "libff/algebra/curves/edwards/edwards_pp.hpp"
+
 // contains required interfaces and types (keypair, proof, generator, prover, verifier)
 #include <libsnark/zk_proof_systems/ppzksnark/r1cs_se_ppzksnark/r1cs_se_ppzksnark.hpp>
 
 #include "util.tcc"
+// contains aggregation circuit
+#include "aggregator.tcc"
 
 typedef long integer_coeff_t;
 
@@ -157,9 +160,12 @@ bool setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int 
   assert(cs.num_variables() >= (unsigned)inputs);
   assert(cs.num_inputs() == (unsigned)inputs);
   assert(cs.num_constraints() == (unsigned)constraints);
-  auto keypair = r1cs_se_ppzksnark_generator<libff::alt_bn128_pp>(cs);
+  auto keypair = r1cs_se_ppzksnark_generator<ppT>(cs);
   gm17::serializeProvingKeyToFile<ppT>(keypair.pk, pk_path);
   gm17::serializeVerificationKeyToFile<Q, ppT, G1T, G2T>(keypair.vk, vk_path);
+  // serialize vk in raw format (easy verify)
+  string raw_vk_path = string(vk_path).append(".raw");
+  writeToFile(raw_vk_path, keypair.vk);
   return true;
 }
 
@@ -167,18 +173,40 @@ template<mp_size_t Q, mp_size_t R, typename ppT, typename G1T, typename G2T>
 bool generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
 {
   auto pk = gm17::deserializeProvingKeyFromFile<ppT>(pk_path);
-  r1cs_variable_assignment<libff::Fr<libff::alt_bn128_pp> > full_variable_assignment;
+  r1cs_variable_assignment<libff::Fr<ppT> > full_variable_assignment;
   for (int i = 1; i < public_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<libff::alt_bn128_pp>(libsnarkBigintFromBytes<R>(public_inputs + i*R*mp_limb_t_size)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<R>(public_inputs + i*R*mp_limb_t_size)));
   }
   for (int i = 0; i < private_inputs_length; i++) {
-    full_variable_assignment.push_back(libff::Fr<libff::alt_bn128_pp>(libsnarkBigintFromBytes<R>(private_inputs + i*R*mp_limb_t_size)));
+    full_variable_assignment.push_back(libff::Fr<ppT>(libsnarkBigintFromBytes<R>(private_inputs + i*R*mp_limb_t_size)));
   }
-  r1cs_primary_input<libff::Fr<libff::alt_bn128_pp>> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + public_inputs_length-1);
-  r1cs_primary_input<libff::Fr<libff::alt_bn128_pp>> auxiliary_input(full_variable_assignment.begin() + public_inputs_length-1, full_variable_assignment.end());
-  auto proof = r1cs_se_ppzksnark_prover<libff::alt_bn128_pp>(pk, primary_input, auxiliary_input);
+  r1cs_primary_input<libff::Fr<ppT>> primary_input(full_variable_assignment.begin(), full_variable_assignment.begin() + public_inputs_length-1);
+  r1cs_primary_input<libff::Fr<ppT>> auxiliary_input(full_variable_assignment.begin() + public_inputs_length-1, full_variable_assignment.end());
+  auto proof = r1cs_se_ppzksnark_prover<ppT>(pk, primary_input, auxiliary_input);
   gm17::exportProof<Q, R, ppT, G1T, G2T>(proof, proof_path, public_inputs, public_inputs_length);
+  // serialize proof in raw format (easy verify)
+  string raw_proof_path = string(proof_path).append(".raw");
+  writeToFile(raw_proof_path, proof);
+  // serialize primary input in raw format (easy verify)
+  string raw_input_path = string(proof_path).append(".input.raw");
+  writeVectorToFile(raw_input_path, primary_input);
+
   return true;
+}
+
+template<typename ppT>
+bool verify_proof(const char* vk_path, const char* proof_path)
+{
+  string raw_vk_path = string(vk_path).append(".raw");
+  auto vk = loadFromFile<r1cs_se_ppzksnark_verification_key<ppT>>(raw_vk_path);
+
+  string raw_proof_path = string(proof_path).append(".raw");
+  auto proof = loadFromFile<r1cs_se_ppzksnark_proof<ppT>>(raw_proof_path);
+
+  string raw_input_path = string(proof_path).append(".input.raw");
+  auto input = loadVectorFromFile<libff::Fr<ppT>>(raw_input_path);
+
+  return r1cs_se_ppzksnark_verifier_strong_IC<ppT>(vk, input, proof);
 }
 
 }
@@ -197,4 +225,108 @@ bool _gm17_generate_proof(const char* pk_path, const char* proof_path, const uin
   libff::inhibit_profiling_counters = true;
   libff::alt_bn128_pp::init_public_params();
   return gm17::generate_proof<libff::alt_bn128_q_limbs, libff::alt_bn128_r_limbs, libff::alt_bn128_pp, libff::alt_bn128_G1, libff::alt_bn128_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _gm17_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::alt_bn128_pp::init_public_params();
+  return gm17::verify_proof<libff::alt_bn128_pp>(vk_path, proof_path);
+}
+
+bool _gm17_mnt4_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4_pp::init_public_params();
+  return gm17::setup<libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _gm17_mnt4_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4_pp::init_public_params();
+  return gm17::generate_proof<libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _gm17_mnt4_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4_pp::init_public_params();
+  return gm17::verify_proof<libff::mnt4_pp>(vk_path, proof_path);
+}
+
+bool _gm17_mnt6_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6_pp::init_public_params();
+  return gm17::setup<libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _gm17_mnt6_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6_pp::init_public_params();
+  return gm17::generate_proof<libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _gm17_mnt6_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6_pp::init_public_params();
+  return gm17::verify_proof<libff::mnt6_pp>(vk_path, proof_path);
+}
+
+bool _gm17_mnt4753_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4753_pp::init_public_params();
+  return gm17::setup<libff::mnt4753_q_limbs, libff::mnt4753_r_limbs, libff::mnt4753_pp, libff::mnt4753_G1, libff::mnt4753_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _gm17_mnt4753_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4753_pp::init_public_params();
+  return gm17::generate_proof<libff::mnt4753_q_limbs, libff::mnt4753_r_limbs, libff::mnt4753_pp, libff::mnt4753_G1, libff::mnt4753_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _gm17_mnt4753_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt4753_pp::init_public_params();
+  return gm17::verify_proof<libff::mnt4753_pp>(vk_path, proof_path);
+}
+
+bool _gm17_mnt6753_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return gm17::setup<libff::mnt6753_q_limbs, libff::mnt6753_r_limbs, libff::mnt6753_pp, libff::mnt6753_G1, libff::mnt6753_G2>(A, B, C, A_len, B_len, C_len, constraints, variables, inputs, pk_path, vk_path);
+}
+
+bool _gm17_mnt6753_generate_proof(const char* pk_path, const char* proof_path, const uint8_t* public_inputs, int public_inputs_length, const uint8_t* private_inputs, int private_inputs_length)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return gm17::generate_proof<libff::mnt6753_q_limbs, libff::mnt6753_r_limbs, libff::mnt6753_pp, libff::mnt6753_G1, libff::mnt6753_G2>(pk_path, proof_path, public_inputs, public_inputs_length, private_inputs, private_inputs_length);
+}
+
+bool _gm17_mnt6753_verify_proof(const char* vk_path, const char* proof_path)
+{
+  libff::inhibit_profiling_info = true;
+  libff::inhibit_profiling_counters = true;
+  libff::mnt6753_pp::init_public_params();
+  return gm17::verify_proof<libff::mnt6753_pp>(vk_path, proof_path);
 }

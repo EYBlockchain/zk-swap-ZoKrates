@@ -224,7 +224,6 @@ template<typename ppT_F, mp_size_t Q, mp_size_t R, typename ppT, typename G1T, t
 bool batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
-    const char *vk_3_path, const char *proof_3_path,
     const char *agg_vk_path, const char *agg_proof_path)
 {
   // vks
@@ -236,11 +235,6 @@ bool batch(
   }
   {
     string raw_vk_path = string(vk_2_path).append(".raw");
-    auto vk = loadFromFile<r1cs_ppzksnark_verification_key<ppT_F>>(raw_vk_path);
-    vks.emplace_back(vk);
-  }
-  {
-    string raw_vk_path = string(vk_3_path).append(".raw");
     auto vk = loadFromFile<r1cs_ppzksnark_verification_key<ppT_F>>(raw_vk_path);
     vks.emplace_back(vk);
   }
@@ -257,11 +251,6 @@ bool batch(
     auto input = loadVectorFromFile<libff::Fr<ppT_F>>(raw_input_path);
     inputs.emplace_back(input);
   }
-  {
-    string raw_input_path = string(proof_3_path).append(".input.raw");
-    auto input = loadVectorFromFile<libff::Fr<ppT_F>>(raw_input_path);
-    inputs.emplace_back(input);
-  }
 
   // proofs
   std::vector<r1cs_ppzksnark_proof<ppT_F>> proofs;
@@ -275,13 +264,8 @@ bool batch(
     auto proof = loadFromFile<r1cs_ppzksnark_proof<ppT_F>>(raw_proof_path);
     proofs.emplace_back(proof);
   }
-  {
-    string raw_proof_path = string(proof_3_path).append(".raw");
-    auto proof = loadFromFile<r1cs_ppzksnark_proof<ppT_F>>(raw_proof_path);
-    proofs.emplace_back(proof);
-  }
 
-  aggregator<ppT_F, ppT> agg(3, inputs[0].size());
+  aggregator<ppT_F, ppT> agg(2, inputs[0].size());
   agg.generate_r1cs_constraints();
   r1cs_ppzksnark_keypair<ppT> keypair = r1cs_ppzksnark_generator<ppT>(agg.pb.get_constraint_system());
   agg.generate_r1cs_witness(vks, inputs, proofs);
@@ -382,27 +366,25 @@ bool _pghr13_mnt6_verify_proof(const char* vk_path, const char* proof_path)
 bool _pghr13_mnt4_mnt6_batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
-    const char *vk_3_path, const char *proof_3_path,
     const char *agg_vk_path, const char *agg_proof_path)
 {
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt4_pp::init_public_params();
   libff::mnt6_pp::init_public_params();
-  return pghr13::batch<libff::mnt4_pp, libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, vk_3_path, proof_3_path, agg_vk_path, agg_proof_path);
+  return pghr13::batch<libff::mnt4_pp, libff::mnt6_q_limbs, libff::mnt6_r_limbs, libff::mnt6_pp, libff::mnt6_G1, libff::mnt6_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, agg_vk_path, agg_proof_path);
 }
 
 bool _pghr13_mnt6_mnt4_batch(
     const char *vk_1_path, const char *proof_1_path,
     const char *vk_2_path, const char *proof_2_path,
-    const char *vk_3_path, const char *proof_3_path,
     const char *agg_vk_path, const char *agg_proof_path)
 {
   libff::inhibit_profiling_info = true;
   libff::inhibit_profiling_counters = true;
   libff::mnt6_pp::init_public_params();
   libff::mnt4_pp::init_public_params();
-  return pghr13::batch<libff::mnt6_pp, libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path, vk_3_path, proof_3_path, agg_vk_path, agg_proof_path);
+  return pghr13::batch<libff::mnt6_pp, libff::mnt4_q_limbs, libff::mnt4_r_limbs, libff::mnt4_pp, libff::mnt4_G1, libff::mnt4_G2>(vk_1_path, proof_1_path, vk_2_path, proof_2_path,  agg_vk_path, agg_proof_path);
 }
 
 bool _pghr13_bls12_377_setup(const uint8_t* A, const uint8_t* B, const uint8_t* C, int A_len, int B_len, int C_len, int constraints, int variables, int inputs, const char* pk_path, const char* vk_path)
