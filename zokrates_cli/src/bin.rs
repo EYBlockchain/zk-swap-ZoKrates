@@ -620,10 +620,24 @@ fn get_scheme(scheme_str: &str) -> Result<&'static dyn ProofSystem, String> {
         {
             "MNT4" => Ok(&PGHR13_MNT4 {}),
             "MNT6" => Ok(&PGHR13_MNT6 {}),
+            "MNT4753" => Ok(&PGHR13_MNT4753 {}),
+            "MNT6753" => Ok(&PGHR13_MNT6753 {}),
+            "BLS12" => Ok(&PGHR13_BLS12 {}),
+            "SW6" => Ok(&PGHR13_SW6 {}),
+            "EDWARDS" => Ok(&PGHR13_EDWARDS {}),
             _ => Ok(&PGHR13 {}),
         },
         #[cfg(feature = "libsnark")]
-        "gm17" => Ok(&GM17 {}),
+        "gm17" => match env::var("ZOKRATES_CURVE")
+            .unwrap_or(String::from(""))
+            .as_ref()
+        {
+            "MNT4" => Ok(&GM17_MNT4 {}),
+            "MNT6" => Ok(&GM17_MNT6 {}),
+            "MNT4753" => Ok(&GM17_MNT4753 {}),
+            "MNT6753" => Ok(&GM17_MNT6753 {}),
+            _ => Ok(&GM17 {}),
+        },
         "g16" => Ok(&G16 {}),
         s => Err(format!("Backend \"{}\" not supported", s)),
     }

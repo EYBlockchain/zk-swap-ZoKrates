@@ -1,15 +1,20 @@
 [submodule "deps/sapling-crypto"]
 	path = deps/sapling-crypto
 	url = git@github.com:EYBlockchain/zk-swap-sapling-crypto
+	branch = ey
 [submodule "deps/ff"]
 	path = deps/ff
 	url = git@github.com:EYBlockchain/zk-swap-ff
+	branch = ey
 [submodule "deps/bellman"]
 	path = deps/bellman
 	url = git@github.com:EYBlockchain/zk-swap-bellman
+	branch = ey
 [submodule "deps/pairing"]
 	path = deps/pairing
 	url = git@github.com:EYBlockchain/zk-swap-pairing
+	branch = ey
 [submodule "deps/libsnark"]
 	path = deps/libsnark
 	url = git@github.com:EYBlockchain/zk-swap-libsnark.git
+        branch = ey

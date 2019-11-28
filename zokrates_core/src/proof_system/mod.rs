@@ -1,5 +1,9 @@
 mod bn128;
 mod mnt;
+mod mnt753;
+mod bls12_377;
+mod sw6;
+mod edwards;
 #[cfg(feature = "libsnark")]
 mod batch;
 
@@ -12,9 +16,27 @@ pub use self::bn128::GM17;
 #[cfg(feature = "libsnark")]
 pub use self::bn128::PGHR13;
 #[cfg(feature = "libsnark")]
+pub use self::bls12_377::PGHR13_BLS12;
+#[cfg(feature = "libsnark")]
 pub use self::mnt::PGHR13_MNT4;
 #[cfg(feature = "libsnark")]
 pub use self::mnt::PGHR13_MNT6;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::GM17_MNT4;
+#[cfg(feature = "libsnark")]
+pub use self::mnt::GM17_MNT6;
+#[cfg(feature = "libsnark")]
+pub use self::mnt753::PGHR13_MNT4753;
+#[cfg(feature = "libsnark")]
+pub use self::mnt753::PGHR13_MNT6753;
+#[cfg(feature = "libsnark")]
+pub use self::mnt753::GM17_MNT4753;
+#[cfg(feature = "libsnark")]
+pub use self::mnt753::GM17_MNT6753;
+#[cfg(feature = "libsnark")]
+pub use self::sw6::PGHR13_SW6;
+#[cfg(feature = "libsnark")]
+pub use self::edwards::PGHR13_EDWARDS;
 #[cfg(feature = "libsnark")]
 pub use self::batch::*;
 

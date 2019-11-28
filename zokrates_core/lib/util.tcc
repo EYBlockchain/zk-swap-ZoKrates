@@ -14,6 +14,8 @@
 #include <libff/algebra/fields/field_utils.hpp>
 #include "libff/algebra/curves/mnt/mnt4/mnt4_pp.hpp"
 #include "libff/algebra/curves/mnt/mnt6/mnt6_pp.hpp"
+#include "libff/algebra/curves/sw6/sw6_pp.hpp"
+
 
 using namespace std;
 
@@ -59,7 +61,7 @@ std::string outputPointG1AffineAsHex(G1T _p)
 {
   G1T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value) {
+  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value || std::is_same<G1T, libff::mnt4753_G1>::value || std::is_same<G1T, libff::mnt6753_G1>::value || std::is_same<G1T, libff::sw6_G1>::value) {
     return
       "0x" +
       HexStringFromLibsnarkBigint<Q>(aff.X().as_bigint()) +
@@ -79,7 +81,7 @@ std::string outputPointG1AffineAsHexJson(G1T _p)
 {
   G1T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value) {
+  if constexpr (std::is_same<G1T, libff::mnt4_G1>::value || std::is_same<G1T, libff::mnt6_G1>::value || std::is_same<G1T, libff::mnt4753_G1>::value || std::is_same<G1T, libff::mnt6753_G1>::value || std::is_same<G1T, libff::sw6_G1>::value) {
     return
       "[\"0x" +
       HexStringFromLibsnarkBigint<Q>(aff.X().as_bigint()) +
@@ -99,7 +101,7 @@ std::string outputPointG2AffineAsHex(G2T _p)
 {
   G2T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value) {
+  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value || std::is_same<G2T, libff::mnt4753_G2>::value || std::is_same<G2T, libff::mnt6753_G2>::value || std::is_same<G2T, libff::sw6_G2>::value) {
     return
       "[0x" +
       HexStringFromLibsnarkBigint<Q>(aff.X().c1.as_bigint()) + ", 0x" +
@@ -121,7 +123,7 @@ std::string outputPointG2AffineAsHexJson(G2T _p)
 {
   G2T aff = _p;
   aff.to_affine_coordinates();
-  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value) {
+  if constexpr (std::is_same<G2T, libff::mnt4_G2>::value || std::is_same<G2T, libff::mnt6_G2>::value || std::is_same<G2T, libff::mnt4753_G2>::value || std::is_same<G2T, libff::mnt6753_G2>::value || std::is_same<G2T, libff::sw6_G2>::value) {
     return
       "[[\"0x" +
       HexStringFromLibsnarkBigint<Q>(aff.X().c1.as_bigint()) + "\", \"0x" +
